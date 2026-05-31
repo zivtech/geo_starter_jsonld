@@ -38,3 +38,10 @@ services:
       - '@config.factory'
     tags:
       - { name: geo_starter_jsonld.paragraph_contributor, priority: 0 }
+
+  geo_starter_jsonld.contributor.step_list:
+    class: Drupal\geo_starter_jsonld\Contributor\StepListContributor
+    arguments:
+      - '@config.factory'
+    tags:
+      - { name: geo_starter_jsonld.paragraph_contributor, priority: 0 }

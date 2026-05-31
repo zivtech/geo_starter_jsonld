@@ -53,6 +53,8 @@ $check('graph contains a WebPage', $webpage !== NULL);
 $check('graph contains a Service', $service !== NULL);
 $check('WebPage.mainEntity links the Service @id', ($webpage['mainEntity']['@id'] ?? NULL) === ($service['@id'] ?? '#'));
 $check('FAQPage present with mainEntity length == 2 (marquee)', $faqpage !== NULL && count($faqpage['mainEntity'] ?? []) === 2);
+$howto = $by_type('HowTo')[0] ?? NULL;
+$check('HowTo present with 2 steps (from section_step_list)', $howto !== NULL && count($howto['step'] ?? []) === 2);
 $check('Service has >=1 citation', !empty($service['citation']));
 
 // Every citation @id must resolve to a CreativeWork at that @id on its own page.
