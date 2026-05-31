@@ -1,0 +1,8 @@
+name: 'GEO Starter JSON-LD'
+type: module
+description: 'Emits parity-correct schema.org JSON-LD in the head of rendered node pages so GEO Starter''s governed content is machine-inspectable by retrieval systems.'
+package: 'GEO Starter'
+core_version_requirement: ^11
+dependencies:
+  - drupal:node
+  - paragraphs:paragraphs

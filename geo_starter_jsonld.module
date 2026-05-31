@@ -1,0 +1,72 @@
+<?php
+
+/**
+ * @file
+ * Attaches schema.org JSON-LD to rendered node pages for GEO Starter.
+ *
+ * Emission logic lives in the geo_starter_jsonld.graph_builder service; this
+ * file is intentionally thin (hook -> service -> attach), per the
+ * "thin hooks, logic in services" rule.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Render\Markup;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_node_view_alter().
+ *
+ * Attaches the node's schema.org JSON-LD graph to the page <head>, but ONLY on
+ * the full canonical view of the node itself (guard #5). hook_node_view_alter()
+ * fires for every node render — teasers in listings, entity_reference embeds,
+ * search snippets, Canvas previews — and a single stable html_head key means the
+ * last render would otherwise win. The four checks below ensure exactly one
+ * graph, describing the page's real subject, is ever emitted.
+ */
+function geo_starter_jsonld_node_view_alter(array &$build, NodeInterface $node, EntityViewDisplayInterface $display): void {
+  // Only the full view mode (not teaser/embed/search).
+  if (($build['#view_mode'] ?? NULL) !== 'full') {
+    return;
+  }
+  // Never on an in-progress preview (e.g. Canvas/Layout Builder admin preview).
+  if (!empty($build['#in_preview'])) {
+    return;
+  }
+  $route_match = \Drupal::routeMatch();
+  // Only on the canonical node route...
+  if ($route_match->getRouteName() !== 'entity.node.canonical') {
+    return;
+  }
+  // ...and only when THIS node is the page's subject (not a full-mode embed
+  // rendered inside another node's canonical page).
+  $routed_node = $route_match->getParameter('node');
+  if (!$routed_node instanceof NodeInterface || (string) $routed_node->id() !== (string) $node->id()) {
+    return;
+  }
+
+  $result = \Drupal::service('geo_starter_jsonld.graph_builder')->build($node, $display);
+  if ($result === NULL) {
+    return;
+  }
+
+  $build['#attached']['html_head'][] = [
+    [
+      '#type' => 'html_tag',
+      '#tag' => 'script',
+      '#attributes' => ['type' => 'application/ld+json'],
+      // JSON is hex-escaped for tags/ampersands in the builder, so it cannot
+      // break out of the <script> element; wrap as Markup to avoid re-encoding.
+      '#value' => Markup::create($result['json']),
+    ],
+    'geo_starter_jsonld',
+  ];
+  // Merge into (never overwrite) the build's existing cache metadata:
+  // applyTo() replaces $build['#cache'] wholesale, which would drop the page's
+  // initial contexts (theme, language, …) and trip VariationCache.
+  CacheableMetadata::createFromRenderArray($build)
+    ->merge($result['cacheability'])
+    ->applyTo($build);
+}

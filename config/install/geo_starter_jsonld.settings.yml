@@ -1,0 +1,7 @@
+service_type: Service
+article_type: Article
+faqpage_on_answer: false
+faqpage_on_service: true
+emit_howto: true
+organization_name: ''
+evidence_default_type: CreativeWork

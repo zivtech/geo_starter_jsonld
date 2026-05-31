@@ -1,0 +1,28 @@
+services:
+  geo_starter_jsonld.graph_builder:
+    class: Drupal\geo_starter_jsonld\JsonLdGraphBuilder
+    arguments:
+      - '@config.factory'
+      - !tagged_iterator geo_starter_jsonld.node_normalizer
+      - !tagged_iterator geo_starter_jsonld.paragraph_contributor
+
+  geo_starter_jsonld.normalizer.service:
+    class: Drupal\geo_starter_jsonld\Normalizer\ServiceNormalizer
+    arguments:
+      - '@config.factory'
+    tags:
+      - { name: geo_starter_jsonld.node_normalizer, priority: 0 }
+
+  geo_starter_jsonld.normalizer.evidence_source:
+    class: Drupal\geo_starter_jsonld\Normalizer\EvidenceSourceNormalizer
+    arguments:
+      - '@config.factory'
+    tags:
+      - { name: geo_starter_jsonld.node_normalizer, priority: 0 }
+
+  geo_starter_jsonld.contributor.faq:
+    class: Drupal\geo_starter_jsonld\Contributor\FaqContributor
+    arguments:
+      - '@config.factory'
+    tags:
+      - { name: geo_starter_jsonld.paragraph_contributor, priority: 0 }

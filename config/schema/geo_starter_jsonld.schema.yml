@@ -1,0 +1,25 @@
+geo_starter_jsonld.settings:
+  type: config_object
+  label: 'GEO Starter JSON-LD settings'
+  mapping:
+    service_type:
+      type: string
+      label: 'schema.org @type emitted for Service nodes'
+    article_type:
+      type: string
+      label: 'schema.org @type emitted for Article nodes'
+    faqpage_on_answer:
+      type: boolean
+      label: 'Emit a FAQPage from section_faq on Answer nodes'
+    faqpage_on_service:
+      type: boolean
+      label: 'Emit a FAQPage from section_faq on Service nodes'
+    emit_howto:
+      type: boolean
+      label: 'Emit a HowTo from section_step_list'
+    organization_name:
+      type: string
+      label: 'Organization name for provider (falls back to the site name when empty)'
+    evidence_default_type:
+      type: string
+      label: 'Default schema.org @type for Evidence Source nodes'
