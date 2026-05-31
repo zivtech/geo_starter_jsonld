@@ -20,6 +20,18 @@ services:
     tags:
       - { name: geo_starter_jsonld.node_normalizer, priority: 0 }
 
+  geo_starter_jsonld.normalizer.answer:
+    class: Drupal\geo_starter_jsonld\Normalizer\AnswerNormalizer
+    tags:
+      - { name: geo_starter_jsonld.node_normalizer, priority: 0 }
+
+  geo_starter_jsonld.normalizer.article:
+    class: Drupal\geo_starter_jsonld\Normalizer\ArticleNormalizer
+    arguments:
+      - '@config.factory'
+    tags:
+      - { name: geo_starter_jsonld.node_normalizer, priority: 0 }
+
   geo_starter_jsonld.contributor.faq:
     class: Drupal\geo_starter_jsonld\Contributor\FaqContributor
     arguments:

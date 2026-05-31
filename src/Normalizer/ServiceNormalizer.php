@@ -65,25 +65,21 @@ final class ServiceNormalizer implements NodeNormalizerInterface {
       $service['potentialAction'] = $action;
     }
 
-    $topics = $this->referencedTermNames($node, $display, 'field_topic', $context);
-    if ($topics !== []) {
-      $service['about'] = array_map(
-        static fn (string $name): array => ['@type' => 'Thing', 'name' => $name],
-        $topics,
-      );
+    $about = $this->schemaAbout($node, $display, 'field_topic', $context);
+    if ($about !== []) {
+      $service['about'] = $about;
     }
 
-    $audiences = $this->referencedTermNames($node, $display, 'field_audience', $context);
-    if ($audiences !== []) {
-      $service['audience'] = array_map(
-        static fn (string $name): array => ['@type' => 'Audience', 'audienceType' => $name],
-        $audiences,
-      );
+    $audience = $this->schemaAudience($node, $display, 'field_audience', $context);
+    if ($audience !== []) {
+      $service['audience'] = $audience;
     }
 
     if ($this->hasValue($node, $display, 'field_reviewed_date')) {
       $service['dateModified'] = $this->isoDate((string) $node->get('field_reviewed_date')->value);
     }
+
+    $service += $this->schemaReviewedBy($node, $display, $context);
 
     $citations = $this->resolveCitations($node, $display, 'field_evidence_sources', $context);
     if ($citations !== []) {

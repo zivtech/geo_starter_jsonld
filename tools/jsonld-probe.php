@@ -108,6 +108,45 @@ if ($refs) {
   $check('suppression: cross-entity cache tag still bubbled', in_array($tag, $after['cacheability']->getCacheTags(), TRUE));
 }
 
+// Answer + Article normalizers (Phase A, independent of the paragraph library).
+$build_first = static function (string $type) use ($builder): ?array {
+  foreach (\Drupal::entityTypeManager()->getStorage('node')->loadByProperties(['type' => $type]) as $candidate) {
+    if (!$candidate->isPublished()) {
+      continue;
+    }
+    $result = $builder->build($candidate, EntityViewDisplay::collectRenderDisplay($candidate, 'full'));
+    if ($result !== NULL) {
+      return json_decode($result['json'], TRUE)['@graph'];
+    }
+  }
+  return NULL;
+};
+$first_of_type = static function (array $graph, string $schema_type): ?array {
+  foreach ($graph as $object) {
+    if (($object['@type'] ?? '') === $schema_type) {
+      return $object;
+    }
+  }
+  return NULL;
+};
+
+$answer = $first_of_type($build_first('answer') ?? [], 'Question');
+$check(
+  'Answer emits a Question (#answer) with acceptedAnswer.text',
+  $answer !== NULL
+    && str_ends_with($answer['@id'] ?? '', '#answer')
+    && !empty($answer['acceptedAnswer']['text']),
+);
+
+$article = $first_of_type($build_first('article') ?? [], 'Article');
+$check(
+  'Article emits an Article (#article) with headline + datePublished',
+  $article !== NULL
+    && str_ends_with($article['@id'] ?? '', '#article')
+    && !empty($article['headline'])
+    && !empty($article['datePublished']),
+);
+
 printf("\n%d passed, %d failed\n", $pass, $fail);
 if ($fail > 0) {
   exit(1);

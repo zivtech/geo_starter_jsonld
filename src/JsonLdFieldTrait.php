@@ -105,4 +105,60 @@ trait JsonLdFieldTrait {
     return trim($value);
   }
 
+  /**
+   * ISO 8601 (UTC) from a Unix timestamp, e.g. a node's created time.
+   */
+  protected function isoFromTimestamp(int $timestamp): string {
+    return gmdate('Y-m-d\TH:i:s\Z', $timestamp);
+  }
+
+  /**
+   * schema.org `about` Things from a visible taxonomy field, or [].
+   *
+   * @return array<int, array{'@type': string, name: string}>
+   */
+  protected function schemaAbout(NodeInterface $node, EntityViewDisplayInterface $display, string $field, JsonLdContext $context): array {
+    return array_map(
+      static fn (string $name): array => ['@type' => 'Thing', 'name' => $name],
+      $this->referencedTermNames($node, $display, $field, $context),
+    );
+  }
+
+  /**
+   * schema.org `audience` Audiences from a visible taxonomy field, or [].
+   *
+   * @return array<int, array{'@type': string, audienceType: string}>
+   */
+  protected function schemaAudience(NodeInterface $node, EntityViewDisplayInterface $display, string $field, JsonLdContext $context): array {
+    return array_map(
+      static fn (string $name): array => ['@type' => 'Audience', 'audienceType' => $name],
+      $this->referencedTermNames($node, $display, $field, $context),
+    );
+  }
+
+  /**
+   * `reviewedBy` + `review` from field_reviewed_by_name / field_reviewed_date.
+   *
+   * Conservative per the GEO trust mapping: emits only a Person name (we have a
+   * name string, not an identity — never a fabricated @id or sameAs). Returns an
+   * associative array to merge into the entity object, or [] when no reviewer.
+   *
+   * @return array<string, mixed>
+   */
+  protected function schemaReviewedBy(NodeInterface $node, EntityViewDisplayInterface $display, JsonLdContext $context): array {
+    if (!$this->hasValue($node, $display, 'field_reviewed_by_name')) {
+      return [];
+    }
+    $name = $this->plainText((string) $node->get('field_reviewed_by_name')->value);
+    if ($name === '') {
+      return [];
+    }
+    $person = ['@type' => 'Person', 'name' => $name];
+    $review = ['@type' => 'Review', 'author' => $person];
+    if ($this->hasValue($node, $display, 'field_reviewed_date')) {
+      $review['dateModified'] = $this->isoDate((string) $node->get('field_reviewed_date')->value);
+    }
+    return ['reviewedBy' => $person, 'review' => $review];
+  }
+
 }

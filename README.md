@@ -15,7 +15,12 @@ One schema.org `@graph` per page, attached as a single
 published node**. The graph never exceeds the visible rendered HTML.
 
 - **Service** → `Service` + `WebPage` (name, description, potentialAction,
-  about, audience, dateModified, citation, provider).
+  about, audience, dateModified, citation, provider, reviewedBy).
+- **Answer** → a `Question` with `acceptedAnswer` (the page title is the
+  question; `field_direct_answer` is the canonical answer), plus citations.
+- **Article** → an `Article` (headline, description, author, reviewedBy,
+  dateModified, datePublished, citation). `author` and reviewer are distinct
+  fields and are never conflated.
 - **Evidence Source** → `CreativeWork` at `{url}#evidence-source` (url/sameAs +
   publisher) — the resolution target for citations.
 - **`section_faq`** → a gated `FAQPage`, emitted only when at least two

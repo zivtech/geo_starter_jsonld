@@ -25,6 +25,8 @@ This is the companion module for the GEO Starter recipe. It reads GEO Starter's 
 ## What It Emits
 
 - Service pages emit a `Service` object plus the page's `WebPage`, carrying the service summary, primary action, topic, audience, review date, and cited sources.
+- Answer pages emit a `Question` with its accepted answer: the page's title is the question, and the direct-answer field is the answer, with cited sources.
+- Article pages emit an `Article` with headline, summary, author, reviewer, dates, and cited sources.
 - Evidence Source pages emit a `CreativeWork` with the external source link and publisher. This is what makes a citation on another page resolve to a real, inspectable source.
 - FAQ sections emit a `FAQPage`, but only when the section has at least two reviewed question-and-answer pairs. Thin or empty FAQs emit nothing.
 - Citations between pages resolve by stable `@id`. If a cited source is unpublished, its citation is dropped, not left dangling.
@@ -46,8 +48,8 @@ Structured data is only as good as its honesty, so the module enforces these rul
 
 ## Scope And Honest Limits
 
-- Implemented and validated on a fresh install: `Service`, `Evidence Source`, and the gated `FAQPage`.
-- Not yet built: `Answer`, `Article`, `HowTo`, contact-point, and item-list emission.
+- Implemented and validated on a fresh install: `Service`, `Answer`, `Article`, `Evidence Source`, and the gated `FAQPage`.
+- Not yet built: `HowTo`, contact-point, and item-list emission.
 - No PHPUnit test suite yet. The slice is validated with a repeatable probe script (`tools/jsonld-probe.php`).
 - External schema.org and Rich Results validation has not been run. Do not make public rich-result claims until it has.
 - No guaranteed AI citations, rankings, rich results, or answer-engine placement. The module makes content inspectable. It does not promise outcomes.
