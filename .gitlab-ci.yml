@@ -1,0 +1,17 @@
+# GitLab CI for drupal/geo_starter_jsonld.
+#
+# Uses the canonical Drupal.org GitLab CI templates, which provide composer,
+# PHP_CodeSniffer, PHPStan, and the full PHPUnit matrix — including a chrome
+# service so FunctionalJavascript tests run automatically.
+#
+# $_GITLAB_TEMPLATES_REPO / $_GITLAB_TEMPLATES_REF are supplied by Drupal.org's
+# GitLab group-level CI/CD variables; projects do not set them.
+#
+# See https://www.drupal.org/docs/develop/git/using-gitlab-to-contribute-to-drupal/gitlab-ci
+include:
+  - project: $_GITLAB_TEMPLATES_REPO
+    ref: $_GITLAB_TEMPLATES_REF
+    file:
+      - "/includes/include.drupalci.main.yml"
+      - "/includes/include.drupalci.variables.yml"
+      - "/includes/include.drupalci.workflows.yml"
