@@ -1,0 +1,265 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Drupal\Tests\geo_starter_jsonld\Kernel;
+
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\geo_starter_jsonld\Contributor\ParagraphContributorInterface;
+use Drupal\geo_starter_jsonld\JsonLdContext;
+use Drupal\geo_starter_jsonld\JsonLdGraphBuilder;
+use Drupal\geo_starter_jsonld\Normalizer\NodeNormalizerInterface;
+use Drupal\KernelTests\KernelTestBase;
+use Drupal\node\Entity\Node;
+use Drupal\node\Entity\NodeType;
+use Drupal\node\NodeInterface;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+
+/**
+ * Tests the orchestration contract of JsonLdGraphBuilder in isolation.
+ *
+ * The builder is constructed directly with anonymous-class normalizer and
+ * contributor doubles and the real config.factory, so the assertions exercise
+ * the actual orchestration (published guard, WebPage spine, mainEntity linking,
+ * one-primary-per-bundle break, contributor merge, script-safe encoding) rather
+ * than the field-reading logic, which lives in the normalizers/contributors.
+ *
+ * @coversDefaultClass \Drupal\geo_starter_jsonld\JsonLdGraphBuilder
+ */
+#[Group('geo_starter_jsonld')]
+#[RunTestsInSeparateProcesses]
+final class JsonLdGraphBuilderTest extends KernelTestBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static $modules = [
+    'system',
+    'user',
+    'field',
+    'node',
+    'geo_starter_jsonld',
+  ];
+
+  /**
+   * The full-mode view display passed through to normalizers.
+   */
+  private EntityViewDisplayInterface $display;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp(): void {
+    parent::setUp();
+    $this->installEntitySchema('user');
+    $this->installEntitySchema('node');
+    $this->installConfig(['geo_starter_jsonld']);
+    NodeType::create(['type' => 'page', 'name' => 'Page'])->save();
+    $this->display = \Drupal::service('entity_display.repository')
+      ->getViewDisplay('node', 'page', 'full');
+  }
+
+  /**
+   * Build a saved node with the given title and published state.
+   */
+  private function makeNode(string $title, bool $published): NodeInterface {
+    $node = Node::create(['type' => 'page', 'title' => $title, 'status' => $published]);
+    $node->save();
+    return $node;
+  }
+
+  /**
+   * A normalizer double that emits one primary object with the given fragment.
+   */
+  private function primaryNormalizer(string $type, string $fragment, string $name = 'Primary'): NodeNormalizerInterface {
+    return new class($type, $fragment, $name) implements NodeNormalizerInterface {
+
+      public function __construct(
+        private readonly string $type,
+        private readonly string $fragment,
+        private readonly string $name,
+      ) {}
+
+      public function applies(NodeInterface $node): bool {
+        return TRUE;
+      }
+
+      public function normalize(NodeInterface $node, EntityViewDisplayInterface $display, JsonLdContext $context): array {
+        return [[
+          '@type' => $this->type,
+          '@id' => $context->canonicalUrl . $this->fragment,
+          'name' => $this->name,
+        ]];
+      }
+
+    };
+  }
+
+  /**
+   * A normalizer double that fails the test if it is ever invoked.
+   */
+  private function explodingNormalizer(): NodeNormalizerInterface {
+    return new class implements NodeNormalizerInterface {
+
+      public function applies(NodeInterface $node): bool {
+        return TRUE;
+      }
+
+      public function normalize(NodeInterface $node, EntityViewDisplayInterface $display, JsonLdContext $context): array {
+        throw new \LogicException('Second applying normalizer must not run.');
+      }
+
+    };
+  }
+
+  /**
+   * A contributor double that emits one top-level object.
+   */
+  private function contributor(string $type, string $fragment): ParagraphContributorInterface {
+    return new class($type, $fragment) implements ParagraphContributorInterface {
+
+      public function __construct(
+        private readonly string $type,
+        private readonly string $fragment,
+      ) {}
+
+      public function applies(NodeInterface $node, EntityViewDisplayInterface $display): bool {
+        return TRUE;
+      }
+
+      public function contribute(NodeInterface $node, EntityViewDisplayInterface $display, JsonLdContext $context): array {
+        return [['@type' => $this->type, '@id' => $context->canonicalUrl . $this->fragment]];
+      }
+
+    };
+  }
+
+  /**
+   * Construct a builder with the given doubles and the real config factory.
+   *
+   * @param \Drupal\geo_starter_jsonld\Normalizer\NodeNormalizerInterface[] $normalizers
+   * @param \Drupal\geo_starter_jsonld\Contributor\ParagraphContributorInterface[] $contributors
+   */
+  private function builder(array $normalizers = [], array $contributors = []): JsonLdGraphBuilder {
+    return new JsonLdGraphBuilder($this->container->get('config.factory'), $normalizers, $contributors);
+  }
+
+  /**
+   * Decode the @graph from a build() result, or fail.
+   *
+   * @return array<int, array<string, mixed>>
+   */
+  private function graphOf(array $result): array {
+    $document = json_decode($result['json'], TRUE);
+    $this->assertIsArray($document);
+    $this->assertSame('https://schema.org', $document['@context']);
+    return $document['@graph'];
+  }
+
+  /**
+   * Return the first graph object of the given @type, or NULL.
+   */
+  private function firstOfType(array $graph, string $type): ?array {
+    foreach ($graph as $object) {
+      if (($object['@type'] ?? NULL) === $type) {
+        return $object;
+      }
+    }
+    return NULL;
+  }
+
+  /**
+   * @covers ::build
+   */
+  public function testUnpublishedNodeEmitsNothing(): void {
+    $node = $this->makeNode('Draft', FALSE);
+    $result = $this->builder([$this->primaryNormalizer('Service', '#service')])->build($node, $this->display);
+    $this->assertNull($result);
+  }
+
+  /**
+   * @covers ::build
+   */
+  public function testWebPageSpineLinksPrimaryEntity(): void {
+    $node = $this->makeNode('Emergency assistance', TRUE);
+    $result = $this->builder([$this->primaryNormalizer('Service', '#service')])->build($node, $this->display);
+    $this->assertNotNull($result);
+    $graph = $this->graphOf($result);
+
+    $webPage = $this->firstOfType($graph, 'WebPage');
+    $service = $this->firstOfType($graph, 'Service');
+    $this->assertNotNull($webPage);
+    $this->assertNotNull($service);
+    // The WebPage is always first and is the spine of the graph.
+    $this->assertSame('WebPage', $graph[0]['@type']);
+    $this->assertSame($webPage['@id'], $webPage['url']);
+    $this->assertSame('Emergency assistance', $webPage['name']);
+    // mainEntity links the primary entity by @id, so the graph is connected.
+    $this->assertSame($service['@id'], $webPage['mainEntity']['@id']);
+    $this->assertStringEndsWith('#service', $service['@id']);
+  }
+
+  /**
+   * @covers ::build
+   */
+  public function testOnlyFirstApplyingNormalizerRuns(): void {
+    $node = $this->makeNode('One primary only', TRUE);
+    // The second normalizer throws if invoked; reaching the assertions proves
+    // the builder broke after the first applying normalizer.
+    $result = $this->builder([
+      $this->primaryNormalizer('Service', '#service'),
+      $this->explodingNormalizer(),
+    ])->build($node, $this->display);
+    $graph = $this->graphOf($result);
+    $this->assertNotNull($this->firstOfType($graph, 'Service'));
+  }
+
+  /**
+   * @covers ::build
+   */
+  public function testContributorObjectsAreMerged(): void {
+    $node = $this->makeNode('With FAQ', TRUE);
+    $result = $this->builder(
+      [$this->primaryNormalizer('Service', '#service')],
+      [$this->contributor('FAQPage', '#faq')],
+    )->build($node, $this->display);
+    $graph = $this->graphOf($result);
+    $this->assertNotNull($this->firstOfType($graph, 'FAQPage'));
+    // Spine + primary + contributor.
+    $this->assertCount(3, $graph);
+  }
+
+  /**
+   * @covers ::build
+   */
+  public function testNoPrimaryMeansNoMainEntity(): void {
+    $node = $this->makeNode('Bare page', TRUE);
+    $result = $this->builder()->build($node, $this->display);
+    $graph = $this->graphOf($result);
+    $webPage = $this->firstOfType($graph, 'WebPage');
+    $this->assertNotNull($webPage);
+    $this->assertArrayNotHasKey('mainEntity', $webPage);
+  }
+
+  /**
+   * @covers ::build
+   */
+  public function testPayloadIsHexEscapedForScriptSafety(): void {
+    $node = $this->makeNode('Safe', TRUE);
+    // A name containing < > & must not appear raw in the <script> payload.
+    $result = $this->builder([
+      $this->primaryNormalizer('Service', '#service', 'A <b> tag & ampersand'),
+    ])->build($node, $this->display);
+    $json = $result['json'];
+    // No raw markup characters survive into the <script> payload...
+    $this->assertStringNotContainsString('<', $json);
+    $this->assertStringNotContainsString('&', $json);
+    // ...they are hex-escaped instead (JSON_HEX_TAG | JSON_HEX_AMP). The
+    // expected escape sequences are computed, not typed, to avoid editor
+    // normalisation of the backslash-u literal.
+    $this->assertStringContainsString(trim(json_encode('<', JSON_HEX_TAG), '"'), $json);
+    $this->assertStringContainsString(trim(json_encode('&', JSON_HEX_AMP), '"'), $json);
+  }
+
+}
