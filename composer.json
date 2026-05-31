@@ -1,7 +1,7 @@
 {
     "name": "drupal/geo_starter_jsonld",
     "type": "drupal-module",
-    "description": "Emits parity-correct schema.org JSON-LD for GEO Starter governed content so people can read it and retrieval systems can inspect it.",
+    "description": "Adds schema.org JSON-LD to GEO Starter pages so retrieval systems and answer engines can read your governed, sourced content.",
     "keywords": ["Drupal", "GEO", "JSON-LD", "schema.org", "structured data"],
     "homepage": "https://www.drupal.org/project/geo_starter_jsonld",
     "license": "GPL-2.0-or-later",
