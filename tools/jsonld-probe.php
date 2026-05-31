@@ -55,6 +55,9 @@ $check('WebPage.mainEntity links the Service @id', ($webpage['mainEntity']['@id'
 $check('FAQPage present with mainEntity length == 2 (marquee)', $faqpage !== NULL && count($faqpage['mainEntity'] ?? []) === 2);
 $howto = $by_type('HowTo')[0] ?? NULL;
 $check('HowTo present with 2 steps (from section_step_list)', $howto !== NULL && count($howto['step'] ?? []) === 2);
+$item_list = $by_type('ItemList')[0] ?? NULL;
+$check('ItemList present with >=1 ListItem (from section_card_grid)', $item_list !== NULL && count($item_list['itemListElement'] ?? []) >= 1);
+$check('Service nests a ContactPoint (from section_contact_panel)', ($service['contactPoint']['@type'] ?? NULL) === 'ContactPoint' && !empty($service['contactPoint']['telephone']));
 $check('Service has >=1 citation', !empty($service['citation']));
 
 // Every citation @id must resolve to a CreativeWork at that @id on its own page.

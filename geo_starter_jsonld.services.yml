@@ -45,3 +45,8 @@ services:
       - '@config.factory'
     tags:
       - { name: geo_starter_jsonld.paragraph_contributor, priority: 0 }
+
+  geo_starter_jsonld.contributor.card_grid:
+    class: Drupal\geo_starter_jsonld\Contributor\CardGridContributor
+    tags:
+      - { name: geo_starter_jsonld.paragraph_contributor, priority: 0 }

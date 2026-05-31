@@ -161,4 +161,44 @@ trait JsonLdFieldTrait {
     return ['reviewedBy' => $person, 'review' => $review];
   }
 
+  /**
+   * ContactPoint from the first section_contact_panel in field_sections, or NULL.
+   *
+   * Returned for NESTING under a Service/Organization object (jsonld plan §3 —
+   * never standalone). Emits only fields that are present and non-empty.
+   *
+   * @return array<string, mixed>|null
+   */
+  protected function contactPointFromSections(NodeInterface $node, EntityViewDisplayInterface $display, JsonLdContext $context): ?array {
+    if (!$this->hasValue($node, $display, 'field_sections')) {
+      return NULL;
+    }
+    foreach ($node->get('field_sections')->referencedEntities() as $section) {
+      if ($section->bundle() !== 'section_contact_panel') {
+        continue;
+      }
+      $context->cacheability->addCacheableDependency($section);
+      $contact = ['@type' => 'ContactPoint'];
+      foreach (['field_section_phone' => 'telephone', 'field_section_email' => 'email', 'field_section_hours' => 'openingHours'] as $field => $property) {
+        if ($section->hasField($field) && !$section->get($field)->isEmpty()) {
+          $value = $this->plainText((string) $section->get($field)->value);
+          if ($value !== '') {
+            $contact[$property] = $value;
+          }
+        }
+      }
+      if ($section->hasField('field_section_address') && !$section->get('field_section_address')->isEmpty()) {
+        $address = $this->plainText((string) $section->get('field_section_address')->value);
+        if ($address !== '') {
+          $contact['address'] = ['@type' => 'PostalAddress', 'streetAddress' => $address];
+        }
+      }
+      // Only return if it carries at least one contact property beyond @type.
+      if (count($contact) > 1) {
+        return $contact;
+      }
+    }
+    return NULL;
+  }
+
 }

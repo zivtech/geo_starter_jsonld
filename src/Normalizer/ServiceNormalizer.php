@@ -92,6 +92,12 @@ final class ServiceNormalizer implements NodeNormalizerInterface {
       $service['provider'] = ['@type' => 'Organization', 'name' => trim($organization)];
     }
 
+    // ContactPoint nests under the Service (never standalone); service-only.
+    $contact_point = $this->contactPointFromSections($node, $display, $context);
+    if ($contact_point !== NULL) {
+      $service['contactPoint'] = $contact_point;
+    }
+
     return [$service];
   }
 
