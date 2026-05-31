@@ -71,8 +71,8 @@ final class FaqPageEmissionTest extends BrowserTestBase {
     $this->createParagraphRefField('paragraph', 'section_faq', 'field_section_items');
     $this->createParagraphRefField('node', 'service', 'field_sections');
 
-    // Enable a real 'full' display that renders field_sections, so the page the
-    // anonymous visitor sees actually shows the FAQ and the contributor's parity
+    // Enable a real 'full' display that renders field_sections, so the page
+    // the anonymous visitor sees shows the FAQ and the contributor's parity
     // guard (field_sections visible) passes on the rendered route.
     EntityViewDisplay::create([
       'targetEntityType' => 'node',
@@ -152,6 +152,8 @@ final class FaqPageEmissionTest extends BrowserTestBase {
    *
    * @param array<int, array{0: string, 1: string}> $pairs
    *   Each pair is [question, answer]; '' marks a deliberately empty side.
+   * @param int $status
+   *   Node publication status; defaults to published.
    */
   private function serviceWithFaq(array $pairs, int $status = NodeInterface::PUBLISHED): NodeInterface {
     $items = [];
@@ -184,6 +186,7 @@ final class FaqPageEmissionTest extends BrowserTestBase {
    * so parse the raw response HTML directly. Returns each decoded document.
    *
    * @return array<int, mixed>
+   *   Each decoded JSON-LD document found on the page.
    */
   private function jsonLdDocuments(): array {
     $html = $this->getSession()->getPage()->getContent();

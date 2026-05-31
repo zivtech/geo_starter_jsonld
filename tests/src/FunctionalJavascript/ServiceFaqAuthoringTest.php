@@ -55,7 +55,7 @@ final class ServiceFaqAuthoringTest extends WebDriverTestBase {
     parent::setUp();
 
     NodeType::create(['type' => 'service', 'name' => 'Service'])->save();
-    // Distinct labels keep the two AJAX "Add" buttons unambiguous to pressButton().
+    // Distinct labels keep the two AJAX "Add" buttons unambiguous.
     ParagraphsType::create(['id' => 'section_faq', 'label' => 'FAQ Section'])->save();
     ParagraphsType::create(['id' => 'section_faq_item', 'label' => 'FAQ Pair'])->save();
 
@@ -90,6 +90,12 @@ final class ServiceFaqAuthoringTest extends WebDriverTestBase {
   /**
    * Create a paragraph reference field restricted to specific target bundles.
    *
+   * @param string $entityType
+   *   The host entity type id.
+   * @param string $bundle
+   *   The host bundle the field instance is attached to.
+   * @param string $name
+   *   The field machine name.
    * @param string[] $targetBundles
    *   The allowed paragraph bundles, so the widget shows one "Add" button.
    */
@@ -191,6 +197,7 @@ final class ServiceFaqAuthoringTest extends WebDriverTestBase {
    * Decode every application/ld+json script block in the current DOM.
    *
    * @return array<int, mixed>
+   *   Each decoded JSON-LD document found on the page.
    */
   private function jsonLdDocuments(): array {
     $html = $this->getSession()->getPage()->getContent();
@@ -245,7 +252,7 @@ final class ServiceFaqAuthoringTest extends WebDriverTestBase {
     $page->pressButton('Add FAQ Pair');
     $assert->assertWaitOnAjaxRequest();
 
-    // Two question inputs and two answer inputs now exist in the nested subform.
+    // Two question + two answer inputs now exist in the nested subform.
     $this->fillNestedBySuffix('[field_section_question][0][value]', 0, 'Q one');
     $this->fillNestedBySuffix('[field_section_answer][0][value]', 0, 'A one');
     $this->fillNestedBySuffix('[field_section_question][0][value]', 1, 'Q two');
