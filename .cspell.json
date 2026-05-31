@@ -1,0 +1,37 @@
+{
+    "description": "Project CSpell config for geo_starter_jsonld, based on the Drupal contrib default. Arrays are expanded by scripts/prepare-cspell.php at CI time.",
+    "language": "en-US",
+    "allowCompoundWords": false,
+    "globRoot": ".",
+    "minWordLength": 4,
+    "ignorePaths": [],
+    "dictionaries": [],
+    "dictionaryDefinitions": [],
+    "words": [
+        "faqpage",
+        "inspectable",
+        "jsonld",
+        "normalisation",
+        "sanitisation",
+        "Köln"
+    ],
+    "flagWords": [
+      "blacklist->blocklist, denylist",
+      "blacklists->blocklists, denylists",
+      "blacklist's->blocklist's, denylist's",
+      "blacklisted->blocklisted, denylisted",
+      "e-mail",
+      "grey",
+      "queuing",
+      "whitelist:allowlist",
+      "whitelists:allowlists",
+      "whitelist's:allowlist's",
+      "whitelisted:allowlisted"
+    ],
+    "overrides": [
+        {
+            "filename": "**/{*.engine,*.inc,*.install,*.module,*.profile,*.theme}",
+            "languageId": "php"
+        }
+    ]
+}

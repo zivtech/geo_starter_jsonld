@@ -6,6 +6,7 @@
     "homepage": "https://www.drupal.org/project/geo_starter_jsonld",
     "license": "GPL-2.0-or-later",
     "require": {
-        "drupal/core": "^11"
+        "drupal/core": "^11",
+        "drupal/paragraphs": "^1.18"
     }
 }
