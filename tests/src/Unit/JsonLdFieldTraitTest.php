@@ -6,6 +6,9 @@ namespace Drupal\Tests\geo_starter_jsonld\Unit;
 
 use Drupal\geo_starter_jsonld\JsonLdFieldTrait;
 use Drupal\Tests\UnitTestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 
 /**
  * Unit-tests the pure, state-free helpers in JsonLdFieldTrait.
@@ -15,10 +18,9 @@ use Drupal\Tests\UnitTestCase;
  * in a stable ISO 8601 (UTC) shape. They touch no entity/container state, so
  * they are tested in isolation with an anonymous class that exposes them
  * publicly.
- *
- * @coversDefaultClass \Drupal\geo_starter_jsonld\JsonLdFieldTrait
- * @group geo_starter_jsonld
  */
+#[CoversClass(JsonLdFieldTrait::class)]
+#[Group('geo_starter_jsonld')]
 final class JsonLdFieldTraitTest extends UnitTestCase {
 
   /**
@@ -41,9 +43,9 @@ final class JsonLdFieldTraitTest extends UnitTestCase {
   }
 
   /**
-   * @covers ::plainText
-   * @dataProvider plainTextProvider
+   * Strips markup, decodes entities, and collapses whitespace via plainText().
    */
+  #[DataProvider('plainTextProvider')]
   public function testPlainText(string $raw, string $expected): void {
     $this->assertSame($expected, $this->subject->plainText($raw));
   }
@@ -68,7 +70,7 @@ final class JsonLdFieldTraitTest extends UnitTestCase {
   }
 
   /**
-   * @covers ::isoFromTimestamp
+   * Formats a Unix timestamp as UTC Zulu ISO 8601 via isoFromTimestamp().
    */
   public function testIsoFromTimestampUsesUtcZuluFormat(): void {
     $this->assertSame('1970-01-01T00:00:00Z', $this->subject->isoFromTimestamp(0));
@@ -77,7 +79,7 @@ final class JsonLdFieldTraitTest extends UnitTestCase {
   }
 
   /**
-   * @covers ::isoDate
+   * Trims surrounding whitespace without reformatting the value (isoDate()).
    */
   public function testIsoDateTrimsButDoesNotReformat(): void {
     $this->assertSame('2024-01-02T10:30:00', $this->subject->isoDate('  2024-01-02T10:30:00  '));

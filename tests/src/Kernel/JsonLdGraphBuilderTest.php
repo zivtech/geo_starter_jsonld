@@ -13,6 +13,7 @@ use Drupal\KernelTests\KernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\node\NodeInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
@@ -24,9 +25,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * the actual orchestration (published guard, WebPage spine, mainEntity linking,
  * one-primary-per-bundle break, contributor merge, script-safe encoding) rather
  * than the field-reading logic, which lives in the normalizers/contributors.
- *
- * @coversDefaultClass \Drupal\geo_starter_jsonld\JsonLdGraphBuilder
  */
+#[CoversClass(JsonLdGraphBuilder::class)]
 #[Group('geo_starter_jsonld')]
 #[RunTestsInSeparateProcesses]
 final class JsonLdGraphBuilderTest extends KernelTestBase {
@@ -192,7 +192,7 @@ final class JsonLdGraphBuilderTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::build
+   * An unpublished node produces no JSON-LD.
    */
   public function testUnpublishedNodeEmitsNothing(): void {
     $node = $this->makeNode('Draft', FALSE);
@@ -201,7 +201,7 @@ final class JsonLdGraphBuilderTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::build
+   * The WebPage spine links the primary entity by @id.
    */
   public function testWebPageSpineLinksPrimaryEntity(): void {
     $node = $this->makeNode('Emergency assistance', TRUE);
@@ -223,7 +223,7 @@ final class JsonLdGraphBuilderTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::build
+   * Only the first applying normalizer runs (one primary per node).
    */
   public function testOnlyFirstApplyingNormalizerRuns(): void {
     $node = $this->makeNode('One primary only', TRUE);
@@ -238,7 +238,7 @@ final class JsonLdGraphBuilderTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::build
+   * Contributor objects are merged into the graph.
    */
   public function testContributorObjectsAreMerged(): void {
     $node = $this->makeNode('With FAQ', TRUE);
@@ -253,7 +253,7 @@ final class JsonLdGraphBuilderTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::build
+   * With no primary entity the WebPage omits mainEntity.
    */
   public function testNoPrimaryMeansNoMainEntity(): void {
     $node = $this->makeNode('Bare page', TRUE);
@@ -265,7 +265,7 @@ final class JsonLdGraphBuilderTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::build
+   * The payload is hex-escaped so it is safe inside a <script> element.
    */
   public function testPayloadIsHexEscapedForScriptSafety(): void {
     $node = $this->makeNode('Safe', TRUE);

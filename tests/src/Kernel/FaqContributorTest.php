@@ -16,6 +16,7 @@ use Drupal\node\Entity\NodeType;
 use Drupal\node\NodeInterface;
 use Drupal\paragraphs\Entity\Paragraph;
 use Drupal\paragraphs\Entity\ParagraphsType;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
@@ -27,9 +28,8 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  * a question AND an answer, on an enabled bundle whose flag is on, with the
  * section host field rendered. These tests build that content model from
  * scratch (no recipe coupling) and exercise each arm of the gate.
- *
- * @coversDefaultClass \Drupal\geo_starter_jsonld\Contributor\FaqContributor
  */
+#[CoversClass(FaqContributor::class)]
 #[Group('geo_starter_jsonld')]
 #[RunTestsInSeparateProcesses]
 final class FaqContributorTest extends KernelTestBase {
@@ -166,8 +166,7 @@ final class FaqContributorTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::applies
-   * @covers ::contribute
+   * Two valid Q&A pairs emit a FAQPage with both questions.
    */
   public function testTwoValidPairsEmitFaqPage(): void {
     $node = $this->serviceWithFaq([['Q one', 'A one'], ['Q two', 'A two']]);
@@ -184,7 +183,7 @@ final class FaqContributorTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::contribute
+   * A single Q&A pair is below the minimum and emits nothing.
    */
   public function testSinglePairIsBelowMinimumAndEmitsNothing(): void {
     $node = $this->serviceWithFaq([['Only question', 'Only answer']]);
@@ -192,7 +191,7 @@ final class FaqContributorTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::contribute
+   * A pair with an empty answer is not counted toward the minimum.
    */
   public function testPairWithEmptyAnswerIsNotCounted(): void {
     // Two items, but one answer is empty → only one valid pair → no FAQPage.
@@ -201,7 +200,7 @@ final class FaqContributorTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::applies
+   * The contributor does not apply when the FAQPage flag is off.
    */
   public function testFlagOffMeansDoesNotApply(): void {
     $this->config('geo_starter_jsonld.settings')->set('faqpage_on_service', FALSE)->save();
@@ -210,7 +209,7 @@ final class FaqContributorTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::applies
+   * The contributor does not apply when field_sections is not rendered.
    */
   public function testHiddenSectionFieldMeansDoesNotApply(): void {
     $node = $this->serviceWithFaq([['Q one', 'A one'], ['Q two', 'A two']]);
