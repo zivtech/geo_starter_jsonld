@@ -2,17 +2,17 @@
 
 /**
  * @file
- * Repeatable acceptance probe for geo_starter_jsonld, mirroring the recipe's
- * JSON:API 200/403 probe discipline.
+ * Repeatable acceptance probe for geo_starter_jsonld.
  *
- * Run against a site installed from the geo_starter recipe (the emergency
- * assistance Service node must carry a 2-pair section_faq and >=1 published
- * evidence source):
+ * Mirrors the recipe's JSON:API 200/403 probe discipline. Run against a site
+ * installed from the geo_starter recipe (the emergency assistance Service node
+ * must carry a 2-pair section_faq and >=1 published evidence source):
  *
  *   ddev drush scr web/modules/custom/geo_starter_jsonld/tools/jsonld-probe.php
  *
  * Exits non-zero if any assertion fails. NOT a substitute for the PHPUnit
- * Kernel/Functional suite (geo_starter_jsonld plan Task 7) — a fast smoke probe.
+ * Kernel/Functional suite (geo_starter_jsonld plan Task 7) — a fast smoke
+ * probe.
  */
 
 declare(strict_types=1);
@@ -34,7 +34,8 @@ if (!$node) {
   exit(1);
 }
 
-// The resolved render display for the full view (what hook_node_view_alter gets).
+// The resolved render display for the full view (what
+// hook_node_view_alter() receives).
 $display = EntityViewDisplay::collectRenderDisplay($node, 'full');
 $builder = \Drupal::service('geo_starter_jsonld.graph_builder');
 
@@ -60,7 +61,8 @@ $check('ItemList present with >=1 ListItem (from section_card_grid)', $item_list
 $check('Service nests a ContactPoint (from section_contact_panel)', ($service['contactPoint']['@type'] ?? NULL) === 'ContactPoint' && !empty($service['contactPoint']['telephone']));
 $check('Service has >=1 citation', !empty($service['citation']));
 
-// Every citation @id must resolve to a CreativeWork at that @id on its own page.
+// Every citation @id must resolve to a CreativeWork at that @id on its own
+// page.
 $resolved = TRUE;
 foreach ($service['citation'] ?? [] as $citation) {
   $id = $citation['@id'] ?? '';
@@ -86,7 +88,8 @@ $draft = clone $node;
 $draft->setUnpublished();
 $check('published guard: draft emits no JSON-LD', $builder->build($draft, $display) === NULL);
 
-// Citation suppression: in-memory unpublish drops the @id but keeps the cache tag.
+// Citation suppression: in-memory unpublish drops the @id but keeps the
+// cache tag.
 $refs = $node->get('field_evidence_sources')->referencedEntities();
 if ($refs) {
   $suppressed = $refs[0];

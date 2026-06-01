@@ -56,6 +56,7 @@ trait JsonLdFieldTrait {
    * Labels of referenced taxonomy terms (visible, non-empty), bubbling tags.
    *
    * @return string[]
+   *   The trimmed, non-empty term labels in field order.
    */
   protected function referencedTermNames(NodeInterface $node, EntityViewDisplayInterface $display, string $field, JsonLdContext $context): array {
     if (!$this->hasValue($node, $display, $field)) {
@@ -78,9 +79,11 @@ trait JsonLdFieldTrait {
    * The cache tag for every referenced node is bubbled BEFORE the published
    * check, so unpublishing a source invalidates this page and drops the
    * (now dangling) citation. Only published targets become a citation @id, and
-   * the @id matches the fragment EvidenceSourceNormalizer mints (#evidence-source).
+   * the @id matches the fragment EvidenceSourceNormalizer mints
+   * (#evidence-source).
    *
    * @return array<int, array{'@id': string}>
+   *   Citation references keyed by @id, one per published evidence source.
    */
   protected function resolveCitations(NodeInterface $node, EntityViewDisplayInterface $display, string $field, JsonLdContext $context): array {
     if (!$this->hasValue($node, $display, $field)) {
@@ -113,9 +116,10 @@ trait JsonLdFieldTrait {
   }
 
   /**
-   * schema.org `about` Things from a visible taxonomy field, or [].
+   * Schema.org `about` Things from a visible taxonomy field, or [].
    *
    * @return array<int, array{'@type': string, name: string}>
+   *   A Thing object per referenced term, or an empty array.
    */
   protected function schemaAbout(NodeInterface $node, EntityViewDisplayInterface $display, string $field, JsonLdContext $context): array {
     return array_map(
@@ -125,9 +129,10 @@ trait JsonLdFieldTrait {
   }
 
   /**
-   * schema.org `audience` Audiences from a visible taxonomy field, or [].
+   * Schema.org `audience` Audiences from a visible taxonomy field, or [].
    *
    * @return array<int, array{'@type': string, audienceType: string}>
+   *   An Audience object per referenced term, or an empty array.
    */
   protected function schemaAudience(NodeInterface $node, EntityViewDisplayInterface $display, string $field, JsonLdContext $context): array {
     return array_map(
@@ -137,13 +142,15 @@ trait JsonLdFieldTrait {
   }
 
   /**
-   * `reviewedBy` + `review` from field_reviewed_by_name / field_reviewed_date.
+   * Builds `reviewedBy` + `review` from the field_reviewed_by_* fields.
    *
-   * Conservative per the GEO trust mapping: emits only a Person name (we have a
-   * name string, not an identity — never a fabricated @id or sameAs). Returns an
-   * associative array to merge into the entity object, or [] when no reviewer.
+   * Conservative per the GEO trust mapping: emits only a Person name (we have
+   * a name string, not an identity — never a fabricated @id or sameAs).
+   * Returns an associative array to merge into the entity object, or [] when
+   * there is no reviewer.
    *
    * @return array<string, mixed>
+   *   The reviewedBy/review properties, or an empty array.
    */
   protected function schemaReviewedBy(NodeInterface $node, EntityViewDisplayInterface $display, JsonLdContext $context): array {
     if (!$this->hasValue($node, $display, 'field_reviewed_by_name')) {
@@ -162,12 +169,13 @@ trait JsonLdFieldTrait {
   }
 
   /**
-   * ContactPoint from the first section_contact_panel in field_sections, or NULL.
+   * ContactPoint from the first section_contact_panel, or NULL.
    *
    * Returned for NESTING under a Service/Organization object (jsonld plan §3 —
    * never standalone). Emits only fields that are present and non-empty.
    *
    * @return array<string, mixed>|null
+   *   The ContactPoint object, or NULL when no panel carries contact data.
    */
   protected function contactPointFromSections(NodeInterface $node, EntityViewDisplayInterface $display, JsonLdContext $context): ?array {
     if (!$this->hasValue($node, $display, 'field_sections')) {
@@ -179,7 +187,12 @@ trait JsonLdFieldTrait {
       }
       $context->cacheability->addCacheableDependency($section);
       $contact = ['@type' => 'ContactPoint'];
-      foreach (['field_section_phone' => 'telephone', 'field_section_email' => 'email', 'field_section_hours' => 'openingHours'] as $field => $property) {
+      $contact_fields = [
+        'field_section_phone' => 'telephone',
+        'field_section_email' => 'email',
+        'field_section_hours' => 'openingHours',
+      ];
+      foreach ($contact_fields as $field => $property) {
         if ($section->hasField($field) && !$section->get($field)->isEmpty()) {
           $value = $this->plainText((string) $section->get($field)->value);
           if ($value !== '') {

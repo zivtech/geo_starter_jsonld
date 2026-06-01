@@ -13,7 +13,7 @@ use Drupal\node\NodeInterface;
 /**
  * Normalizes an Article node to a schema.org Article (jsonld plan §2.3).
  *
- * author and reviewer are two DISTINCT fields and must not be conflated:
+ * Author and reviewer are two DISTINCT fields and must not be conflated:
  * author ← field_author_name, reviewedBy/review ← field_reviewed_by_name.
  */
 final class ArticleNormalizer implements NodeNormalizerInterface {
@@ -50,7 +50,7 @@ final class ArticleNormalizer implements NodeNormalizerInterface {
       }
     }
 
-    // author comes from the dedicated author field — NOT the reviewer.
+    // Author comes from the dedicated author field — NOT the reviewer.
     if ($this->hasValue($node, $display, 'field_author_name')) {
       $author = $this->plainText((string) $node->get('field_author_name')->value);
       if ($author !== '') {
@@ -58,7 +58,7 @@ final class ArticleNormalizer implements NodeNormalizerInterface {
       }
     }
 
-    // reviewer is distinct from author (field_reviewed_by_name).
+    // Reviewer is distinct from author (field_reviewed_by_name).
     $article += $this->schemaReviewedBy($node, $display, $context);
 
     if ($this->hasValue($node, $display, 'field_reviewed_date')) {
@@ -85,8 +85,10 @@ final class ArticleNormalizer implements NodeNormalizerInterface {
   }
 
   /**
-   * Prefer a first-published timestamp (published_at, if a module provides it);
-   * fall back to the node's created time.
+   * Resolves the most accurate publication date for the node.
+   *
+   * Prefers a first-published timestamp (published_at, if a module provides
+   * it) and falls back to the node's created time.
    */
   private function datePublished(NodeInterface $node): string {
     if ($node->hasField('published_at') && !$node->get('published_at')->isEmpty()) {

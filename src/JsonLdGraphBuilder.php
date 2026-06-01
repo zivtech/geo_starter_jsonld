@@ -7,8 +7,6 @@ namespace Drupal\geo_starter_jsonld;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
-use Drupal\geo_starter_jsonld\Contributor\ParagraphContributorInterface;
-use Drupal\geo_starter_jsonld\Normalizer\NodeNormalizerInterface;
 use Drupal\node\NodeInterface;
 
 /**
@@ -22,14 +20,22 @@ use Drupal\node\NodeInterface;
 final class JsonLdGraphBuilder {
 
   /**
-   * JSON flags: hex-escape tags/ampersands so the payload cannot break out of
-   * the <script> element, while keeping slashes and unicode human-readable.
+   * JSON flags for safely embedding the payload in a <script> element.
+   *
+   * Hex-escapes tags/ampersands so the payload cannot break out of the
+   * <script> element, while keeping slashes and unicode human-readable.
    */
   private const JSON_FLAGS = JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
 
   /**
+   * Constructs a JsonLdGraphBuilder.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory, used to read per-bundle emission settings.
    * @param \Drupal\geo_starter_jsonld\Normalizer\NodeNormalizerInterface[] $normalizers
+   *   The tagged per-bundle node normalizers.
    * @param \Drupal\geo_starter_jsonld\Contributor\ParagraphContributorInterface[] $contributors
+   *   The tagged paragraph-derived object contributors.
    */
   public function __construct(
     private readonly ConfigFactoryInterface $configFactory,
@@ -41,6 +47,8 @@ final class JsonLdGraphBuilder {
    * Build the JSON-LD document for a node, or NULL when nothing should emit.
    *
    * @return array{json: string, cacheability: \Drupal\Core\Cache\CacheableMetadata}|null
+   *   The encoded JSON-LD payload and its cache metadata, or NULL when the
+   *   node is unpublished or no object was produced.
    */
   public function build(NodeInterface $node, EntityViewDisplayInterface $display): ?array {
     // Universal guard #1: published nodes only.

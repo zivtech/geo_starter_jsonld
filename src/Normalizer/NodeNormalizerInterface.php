@@ -29,6 +29,7 @@ interface NodeNormalizerInterface {
    * primary entity.
    *
    * @return array<int, array<string, mixed>>
+   *   The schema.org object(s); the first is the page's primary entity.
    */
   public function normalize(NodeInterface $node, EntityViewDisplayInterface $display, JsonLdContext $context): array;
 

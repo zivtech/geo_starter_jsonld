@@ -81,16 +81,23 @@ final class JsonLdGraphBuilderTest extends KernelTestBase {
         private readonly string $name,
       ) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function applies(NodeInterface $node): bool {
         return TRUE;
       }
 
+      /**
+       * {@inheritdoc}
+       */
       public function normalize(NodeInterface $node, EntityViewDisplayInterface $display, JsonLdContext $context): array {
         return [[
           '@type' => $this->type,
           '@id' => $context->canonicalUrl . $this->fragment,
           'name' => $this->name,
-        ]];
+        ],
+        ];
       }
 
     };
@@ -102,10 +109,16 @@ final class JsonLdGraphBuilderTest extends KernelTestBase {
   private function explodingNormalizer(): NodeNormalizerInterface {
     return new class implements NodeNormalizerInterface {
 
+      /**
+       * {@inheritdoc}
+       */
       public function applies(NodeInterface $node): bool {
         return TRUE;
       }
 
+      /**
+       * {@inheritdoc}
+       */
       public function normalize(NodeInterface $node, EntityViewDisplayInterface $display, JsonLdContext $context): array {
         throw new \LogicException('Second applying normalizer must not run.');
       }
@@ -124,10 +137,16 @@ final class JsonLdGraphBuilderTest extends KernelTestBase {
         private readonly string $fragment,
       ) {}
 
+      /**
+       * {@inheritdoc}
+       */
       public function applies(NodeInterface $node, EntityViewDisplayInterface $display): bool {
         return TRUE;
       }
 
+      /**
+       * {@inheritdoc}
+       */
       public function contribute(NodeInterface $node, EntityViewDisplayInterface $display, JsonLdContext $context): array {
         return [['@type' => $this->type, '@id' => $context->canonicalUrl . $this->fragment]];
       }
@@ -139,7 +158,9 @@ final class JsonLdGraphBuilderTest extends KernelTestBase {
    * Construct a builder with the given doubles and the real config factory.
    *
    * @param \Drupal\geo_starter_jsonld\Normalizer\NodeNormalizerInterface[] $normalizers
+   *   The normalizer doubles to inject.
    * @param \Drupal\geo_starter_jsonld\Contributor\ParagraphContributorInterface[] $contributors
+   *   The contributor doubles to inject.
    */
   private function builder(array $normalizers = [], array $contributors = []): JsonLdGraphBuilder {
     return new JsonLdGraphBuilder($this->container->get('config.factory'), $normalizers, $contributors);
@@ -149,6 +170,7 @@ final class JsonLdGraphBuilderTest extends KernelTestBase {
    * Decode the @graph from a build() result, or fail.
    *
    * @return array<int, array<string, mixed>>
+   *   The decoded @graph array.
    */
   private function graphOf(array $result): array {
     $document = json_decode($result['json'], TRUE);

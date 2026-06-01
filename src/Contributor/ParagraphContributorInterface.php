@@ -12,7 +12,8 @@ use Drupal\node\NodeInterface;
  * Contributes paragraph-derived top-level graph objects (e.g. FAQPage, HowTo).
  *
  * Implementations are registered as tagged services
- * (geo_starter_jsonld.paragraph_contributor) and collected by the graph builder.
+ * (geo_starter_jsonld.paragraph_contributor) and collected by the graph
+ * builder.
  */
 interface ParagraphContributorInterface {
 
@@ -29,6 +30,7 @@ interface ParagraphContributorInterface {
    * structured object, which is parity-safe.
    *
    * @return array<int, array<string, mixed>>
+   *   Zero or more top-level graph objects to merge into the @graph.
    */
   public function contribute(NodeInterface $node, EntityViewDisplayInterface $display, JsonLdContext $context): array;
 

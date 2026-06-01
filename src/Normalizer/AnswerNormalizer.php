@@ -15,7 +15,8 @@ use Drupal\node\NodeInterface;
  * The marquee GEO pattern for Answer pages (jsonld plan §2.2): the page's title
  * is the question, and field_direct_answer is the single canonical answer. A
  * broad FAQPage is deliberately NOT emitted here — that is the gated
- * FaqContributor's job, and only when faqpage_on_answer is enabled (default off).
+ * FaqContributor's job, and only when faqpage_on_answer is enabled (default
+ * off).
  */
 final class AnswerNormalizer implements NodeNormalizerInterface {
 

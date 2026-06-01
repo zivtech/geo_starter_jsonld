@@ -22,8 +22,8 @@ use Drupal\node\NodeInterface;
  * Attaches the node's schema.org JSON-LD graph to the page <head>, but ONLY on
  * the full canonical view of the node itself (guard #5). hook_node_view_alter()
  * fires for every node render — teasers in listings, entity_reference embeds,
- * search snippets, Canvas previews — and a single stable html_head key means the
- * last render would otherwise win. The four checks below ensure exactly one
+ * search snippets, Canvas previews — and a single stable html_head key means
+ * the last render would otherwise win. The four checks below ensure exactly one
  * graph, describing the page's real subject, is ever emitted.
  */
 function geo_starter_jsonld_node_view_alter(array &$build, NodeInterface $node, EntityViewDisplayInterface $display): void {

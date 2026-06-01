@@ -79,9 +79,9 @@ final class FaqContributorTest extends KernelTestBase {
     $this->createParagraphRefField('node', 'service', 'field_sections');
 
     // Render field_sections in the full display so the parity guard passes.
-    // The display is used in-memory only (applies() reads getComponent()); it is
-    // deliberately not saved, which would trigger dependency calculation against
-    // formatters this minimal fixture does not configure.
+    // The display is used in-memory only (applies() reads getComponent()); it
+    // is deliberately not saved, which would trigger dependency calculation
+    // against formatters this minimal fixture does not configure.
     $this->display = \Drupal::service('entity_display.repository')
       ->getViewDisplay('node', 'service', 'full')
       ->setComponent('field_sections', ['weight' => 0]);

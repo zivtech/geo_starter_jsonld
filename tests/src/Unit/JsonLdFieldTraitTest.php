@@ -11,9 +11,10 @@ use Drupal\Tests\UnitTestCase;
  * Unit-tests the pure, state-free helpers in JsonLdFieldTrait.
  *
  * These three helpers carry the JSON-LD parity/sanitisation guarantees: text is
- * stripped of markup before it can enter a JSON string, and dates are emitted in
- * a stable ISO 8601 (UTC) shape. They touch no entity/container state, so they
- * are tested in isolation with an anonymous class that exposes them publicly.
+ * stripped of markup before it can enter a JSON string, and dates are emitted
+ * in a stable ISO 8601 (UTC) shape. They touch no entity/container state, so
+ * they are tested in isolation with an anonymous class that exposes them
+ * publicly.
  *
  * @coversDefaultClass \Drupal\geo_starter_jsonld\JsonLdFieldTrait
  * @group geo_starter_jsonld
@@ -30,7 +31,7 @@ final class JsonLdFieldTraitTest extends UnitTestCase {
    */
   protected function setUp(): void {
     parent::setUp();
-    $this->subject = new class {
+    $this->subject = new class() {
       use JsonLdFieldTrait {
         plainText as public;
         isoDate as public;
@@ -51,6 +52,7 @@ final class JsonLdFieldTraitTest extends UnitTestCase {
    * Cases for ::plainText.
    *
    * @return array<string, array{string, string}>
+   *   Raw input mapped to its expected plain-text output.
    */
   public static function plainTextProvider(): array {
     return [
