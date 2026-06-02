@@ -14,13 +14,16 @@ One schema.org `@graph` per page, attached as a single
 `<script type="application/ld+json">`, **only on the full canonical view of a
 published node**. The graph never exceeds the visible rendered HTML.
 
-- **Service** → `Service` + `WebPage` (name, description, potentialAction,
-  about, audience, dateModified, citation, provider, reviewedBy).
+- **Service** → a `Service` (name, description, potentialAction, audience, and a
+  `provider` Organization that nests the `ContactPoint` and `PostalAddress`).
+  Page-level metadata schema.org does not place on a Service — `about`,
+  `citation`, `dateModified`, `reviewedBy` — is emitted on the `WebPage`.
 - **Answer** → a `Question` with `acceptedAnswer` (the page title is the
-  question; `field_direct_answer` is the canonical answer), plus citations.
-- **Article** → an `Article` (headline, description, author, reviewedBy,
-  dateModified, datePublished, citation). `author` and reviewer are distinct
-  fields and are never conflated.
+  question; `field_direct_answer` is the canonical answer), plus `about` and
+  citations; `reviewedBy` is on the `WebPage`.
+- **Article** → an `Article` (headline, description, author, about,
+  dateModified, datePublished, citation); `reviewedBy` is on the `WebPage`.
+  `author` and reviewer are distinct fields and are never conflated.
 - **Evidence Source** → `CreativeWork` at `{url}#evidence-source` (url/sameAs +
   publisher) — the resolution target for citations.
 - **`section_faq`** → a gated `FAQPage`, emitted only when at least two
@@ -29,6 +32,12 @@ published node**. The graph never exceeds the visible rendered HTML.
 Cross-node `citation` references resolve by `@id`: a citing node points at
 `{evidence_url}#evidence-source`, where the Evidence Source page declares the
 full `CreativeWork`. Unpublished targets are suppressed (no dangling `@id`).
+
+Every page also emits a `WebPage` linked to the primary entity by `mainEntity`.
+Properties schema.org does not scope to the primary type are emitted there
+instead — notably `reviewedBy`, which is `WebPage`-domain-only and so is **never**
+placed on the primary entity. `tools/schema-domain-check.py` and the acceptance
+probe both guard that placement.
 
 ## Design
 
@@ -53,11 +62,32 @@ representations. It makes governed content inspectable; it promises no outcomes.
 `emit_howto`, `organization_name` (falls back to the site name),
 `evidence_default_type`.
 
-## Acceptance probe
+## Release validation
 
-```
-ddev drush scr web/modules/custom/geo_starter_jsonld/tools/jsonld-probe.php
-```
+Before tagging a release, run all three — together they are the gate for the
+"clean, machine-inspectable structured data" claim:
+
+1. **PHPUnit** (also runs automatically in Drupal.org CI) — the Unit + Kernel +
+   Functional suites, including `ReviewedByPlacementTest`, which asserts
+   `reviewedBy` only ever lands on the `WebPage`.
+2. **Acceptance probe** — full-surface fidelity against a recipe-installed site:
+   ```
+   ddev drush scr web/modules/custom/geo_starter_jsonld/tools/jsonld-probe.php
+   ```
+3. **schema.org domain check** — confirms every emitted property sits on a
+   domain-valid type (0 errors / 0 warnings); the check behind
+   `docs/SCHEMA-VALIDATION-2026-06-01.md`. The hosted validator.schema.org can't
+   fetch a local site, so run it offline against the official vocabulary:
+   ```
+   # once: fetch the vocabulary
+   curl -sL https://schema.org/version/latest/schemaorg-current-https.jsonld -o /tmp/schemaorg.jsonld
+   # per published node — extract the @graph, then check it:
+   curl -sk https://SITE/path | python3 -c "import sys,re,json;b=re.findall(r'<script type=\"application/ld\+json\">(.*?)</script>',sys.stdin.read(),re.S);print([x for x in b if '@graph' in x][0])" > /tmp/page.jsonld
+   python3 tools/schema-domain-check.py /tmp/schemaorg.jsonld /tmp/page.jsonld
+   ```
+   Sweep **all** node types (Service, Article, Answer, Evidence Source), not one:
+   the 2026-06-01 single-node validation missed an Answer-node violation that
+   only an all-types sweep caught.
 
 ## License
 

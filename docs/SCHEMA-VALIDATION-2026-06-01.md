@@ -165,13 +165,16 @@ ContactPoint, PostalAddress, Thing, Audience) introduce none.
 
 ### Still open (recommended follow-ups, not done here)
 
-- **No *automated* regression guard yet.** The checker is now committed
-  (`tools/schema-domain-check.py`, companion to `tools/jsonld-probe.php`), but
-  nothing runs it on a schedule. This class of bug already shipped into the tree
-  once — `Question.reviewedBy` — and nothing prevents the next normalizer from
-  reintroducing it: the Kernel test exercises the bag channel via doubles, and
-  `FaqPageEmissionTest` doesn't assert the relocated properties, so the routing
-  decision is verified only by this one-time sweep. Recommend wiring the checker
-  into CI (against the probe fixtures / a fresh install) and/or a Kernel test
-  asserting `reviewedBy` only ever appears on the WebPage.
+- **Regression guards — added 2026-06-02 (was: none).** `ReviewedByPlacementTest`
+  (Kernel) asserts `reviewedBy` only ever lands on the WebPage across the
+  service/article/answer normalizers, and runs in the standard Drupal.org CI
+  phpunit matrix — so the bug class that shipped as `Question.reviewedBy` is now
+  guarded automatically. `tools/jsonld-probe.php` was repaired (it had asserted
+  the pre-fix `Service.contactPoint`/`Service.citation` shape) and now carries
+  inverse guards locking the relocation. The full-vocab
+  `tools/schema-domain-check.py` cannot run in the module's standard CI — it needs
+  rendered content, which lives in the `geo_starter` recipe, and Drupal.org CI
+  does not serve a site — so by decision it is a documented **release gate** (see
+  the README "Release validation" section), run via `drush scr` against a recipe
+  site. It could optionally be gated in the recipe repo's pipeline later.
 - **Structured hours field** if `OpeningHoursSpecification` output is wanted.
