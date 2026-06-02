@@ -65,7 +65,21 @@ $check('ItemList present with >=1 ListItem (from section_card_grid)', $item_list
 $provider = $service['provider'] ?? [];
 $check('Service.provider nests a ContactPoint (from section_contact_panel)', ($provider['contactPoint']['@type'] ?? NULL) === 'ContactPoint' && !empty($provider['contactPoint']['telephone']));
 $check('Service.provider carries a PostalAddress', ($provider['address']['@type'] ?? NULL) === 'PostalAddress');
-$check('provider.contactPoint omits free-text openingHours', !isset($provider['contactPoint']['openingHours']));
+// Structured hours nest under the ContactPoint as hoursAvailable
+// (OpeningHoursSpecification); the sample ships Mon-Fri 09:00-17:00.
+$hours = $provider['contactPoint']['hoursAvailable'] ?? NULL;
+$check(
+  'contactPoint.hoursAvailable carries 5 OpeningHoursSpecification (Mon-Fri)',
+  is_array($hours) && count($hours) === 5
+    && ($hours[0]['@type'] ?? NULL) === 'OpeningHoursSpecification',
+);
+$check(
+  'first hoursAvailable is Monday 09:00-17:00',
+  ($hours[0]['dayOfWeek'] ?? NULL) === 'https://schema.org/Monday'
+    && ($hours[0]['opens'] ?? NULL) === '09:00'
+    && ($hours[0]['closes'] ?? NULL) === '17:00',
+);
+$check('Service omits hoursAvailable when the ContactPoint carries it', !isset($service['hoursAvailable']));
 
 // Domain-correctness guards: page-level CreativeWork metadata lives on the
 // WebPage (a CreativeWork), never on the non-CreativeWork Service. These lock

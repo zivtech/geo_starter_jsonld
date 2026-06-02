@@ -173,17 +173,20 @@ trait JsonLdFieldTrait {
    *
    * Split by schema.org domain so the pieces attach where they are valid: a
    * `ContactPoint` (reachable channels only — telephone/email) nests under the
-   * provider Organization, and the postal `address` is an Organization property
-   * in its own right (ContactPoint has no `address`). Free-text opening hours
-   * are intentionally NOT emitted: ContactPoint's `hoursAvailable` needs a
-   * structured OpeningHoursSpecification we cannot derive from free text, and a
-   * wrong value is a worse signal than an absent one — the hours stay in
-   * the visible HTML (parity-safe). The first panel carrying any contact data
-   * wins; both pieces are present-and-non-empty gated.
+   * provider Organization, the postal `address` is an Organization property in
+   * its own right (ContactPoint has no `address`), and structured opening hours
+   * become `hoursAvailable` (an array of `OpeningHoursSpecification`). Hours
+   * are read defensively from the office_hours field's stored columns through
+   * OpeningHoursMapper, so the module keeps no dependency on the office_hours
+   * contrib module: when the field is absent, empty, or not office_hours-shaped
+   * the mapper returns [] and no hours are emitted — parity-safe, since a wrong
+   * value is a worse signal than an absent one. The first panel carrying any
+   * contact datum wins; every piece is present-and-non-empty gated.
    *
-   * @return array{contactPoint: array<string, mixed>|null, address: array<string, mixed>|null}|null
-   *   The contactPoint and address pieces to attach to the provider
-   *   Organization, or NULL when no panel carries contact data.
+   * @return array{contactPoint: array<string, mixed>|null, address: array<string, mixed>|null, hoursAvailable: array<int, array<string, string>>|null}|null
+   *   The contactPoint, address, and hoursAvailable pieces to attach to the
+   *   provider Organization (hours fall back to the Service), or NULL when no
+   *   panel carries contact data.
    */
   protected function organizationContactFromSections(NodeInterface $node, EntityViewDisplayInterface $display, JsonLdContext $context): ?array {
     if (!$this->hasValue($node, $display, 'field_sections')) {
@@ -222,8 +225,23 @@ trait JsonLdFieldTrait {
         }
       }
 
-      if ($contact_point !== NULL || $address !== NULL) {
-        return ['contactPoint' => $contact_point, 'address' => $address];
+      // Structured opening hours → hoursAvailable. Read the raw office_hours
+      // value columns and map them; the mapper drops anything it cannot
+      // represent faithfully and returns [] for a non-office_hours field.
+      $hours = NULL;
+      if ($section->hasField('field_section_hours') && !$section->get('field_section_hours')->isEmpty()) {
+        $specifications = OpeningHoursMapper::mapRows($section->get('field_section_hours')->getValue());
+        if ($specifications !== []) {
+          $hours = $specifications;
+        }
+      }
+
+      if ($contact_point !== NULL || $address !== NULL || $hours !== NULL) {
+        return [
+          'contactPoint' => $contact_point,
+          'address' => $address,
+          'hoursAvailable' => $hours,
+        ];
       }
     }
     return NULL;

@@ -8,5 +8,8 @@
     "require": {
         "drupal/core": "^11",
         "drupal/paragraphs": "^1.18"
+    },
+    "require-dev": {
+        "drupal/office_hours": "^1.29"
     }
 }

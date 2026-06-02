@@ -123,6 +123,13 @@ hours are **omitted** from JSON-LD — they remain in the visible HTML
 (parity-safe). The faithful fix is a structured hours field in the content
 model, which is out of scope for this cleanup.
 
+> **Resolved 2026-06-02.** `field_section_hours` is now an `office_hours`
+> (contrib) field in the `geo_starter` recipe, so the structured source exists.
+> `OpeningHoursMapper` reads its columns and emits `hoursAvailable`
+> (`OpeningHoursSpecification`) on the Service's `ContactPoint` — or on the
+> Service itself when no reachable channel is present. See
+> `docs/plans/2026-06-02-hoursavailable-via-office-hours.md`.
+
 ### A bug the single-node pass structurally could not see
 
 The 2026-06-01 validation checked one node and explicitly did not exercise the
@@ -177,4 +184,7 @@ ContactPoint, PostalAddress, Thing, Audience) introduce none.
   does not serve a site — so by decision it is a documented **release gate** (see
   the README "Release validation" section), run via `drush scr` against a recipe
   site. It could optionally be gated in the recipe repo's pipeline later.
-- **Structured hours field** if `OpeningHoursSpecification` output is wanted.
+- ~~**Structured hours field** if `OpeningHoursSpecification` output is wanted.~~
+  **Resolved 2026-06-02** — the recipe now ships an `office_hours` field and the
+  module emits `hoursAvailable` (`OpeningHoursSpecification`). See
+  `docs/plans/2026-06-02-hoursavailable-via-office-hours.md`.

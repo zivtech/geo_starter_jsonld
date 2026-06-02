@@ -16,8 +16,10 @@ use Drupal\node\NodeInterface;
  * Intentionally thin (SCHEMA_MAP.md / jsonld plan §2.1). The Service carries
  * the properties schema.org puts in its domain: name, description,
  * potentialAction, audience, and a provider Organization (which in turn hosts
- * contactPoint and address). Page-level CreativeWork metadata that Service is
- * not in the domain for — about, citation, dateModified, reviewedBy/review —
+ * contactPoint, address, and the contact point's hoursAvailable; hours with no
+ * contact point fall back to the Service). Page-level CreativeWork metadata
+ * that Service is not in the domain for — about, citation, dateModified,
+ * reviewedBy/review —
  * is routed to the WebPage via the build context (the WebPage links back
  * through mainEntity). The visibly-rendered field_problem_solved /
  * field_eligibility have no faithful schema.org property on Service and are
@@ -96,20 +98,37 @@ final class ServiceNormalizer implements NodeNormalizerInterface {
     // contactPoint and address on an Organization, not on a Service or a
     // ContactPoint. With no organization name there is nowhere domain-valid to
     // hang contact data, so it is omitted rather than placed on an unnamed Org.
+    $contact = $this->organizationContactFromSections($node, $display, $context);
+    $hours = $contact['hoursAvailable'] ?? NULL;
+    $hours_on_contact_point = FALSE;
+
     $organization = $settings->get('organization_name')
       ?: $this->configFactory->get('system.site')->get('name');
     if (is_string($organization) && trim($organization) !== '') {
       $provider = ['@type' => 'Organization', 'name' => trim($organization)];
-      $contact = $this->organizationContactFromSections($node, $display, $context);
       if ($contact !== NULL) {
         if ($contact['contactPoint'] !== NULL) {
-          $provider['contactPoint'] = $contact['contactPoint'];
+          $contact_point = $contact['contactPoint'];
+          // hoursAvailable is domain-valid on ContactPoint; nest it with the
+          // reachable channel it describes.
+          if ($hours !== NULL) {
+            $contact_point['hoursAvailable'] = $hours;
+            $hours_on_contact_point = TRUE;
+          }
+          $provider['contactPoint'] = $contact_point;
         }
         if ($contact['address'] !== NULL) {
           $provider['address'] = $contact['address'];
         }
       }
       $service['provider'] = $provider;
+    }
+
+    // Hours that did not nest under a ContactPoint go on the Service itself
+    // (hoursAvailable is domain-valid on Service too) — for a panel with hours
+    // but no reachable channel, or a site with no organization name.
+    if ($hours !== NULL && !$hours_on_contact_point) {
+      $service['hoursAvailable'] = $hours;
     }
 
     return [$service];

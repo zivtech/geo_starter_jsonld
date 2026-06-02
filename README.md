@@ -15,9 +15,12 @@ One schema.org `@graph` per page, attached as a single
 published node**. The graph never exceeds the visible rendered HTML.
 
 - **Service** → a `Service` (name, description, potentialAction, audience, and a
-  `provider` Organization that nests the `ContactPoint` and `PostalAddress`).
-  Page-level metadata schema.org does not place on a Service — `about`,
-  `citation`, `dateModified`, `reviewedBy` — is emitted on the `WebPage`.
+  `provider` Organization that nests the `ContactPoint` and `PostalAddress`). When
+  the contact panel carries a structured hours field, the `ContactPoint` also
+  carries `hoursAvailable` (`OpeningHoursSpecification`); hours with no reachable
+  channel fall back to `Service.hoursAvailable`. Page-level metadata schema.org
+  does not place on a Service — `about`, `citation`, `dateModified`, `reviewedBy`
+  — is emitted on the `WebPage`.
 - **Answer** → a `Question` with `acceptedAnswer` (the page title is the
   question; `field_direct_answer` is the canonical answer), plus `about` and
   citations; `reviewedBy` is on the `WebPage`.
@@ -53,7 +56,11 @@ probe both guard that placement.
 
 No ranking, rich-result, or answer-engine-placement promises. No required AI
 provider, no RDFa, no duplication of field content into conflicting
-representations. It makes governed content inspectable; it promises no outcomes.
+representations. (Hours are a case in point: the recipe renders them with
+office_hours' table formatter and this module emits the `hoursAvailable`
+JSON-LD, so office_hours' own `office_hours_schema_org` formatter stays off to
+avoid double-emitting opening hours.) It makes governed content inspectable; it
+promises no outcomes.
 
 ## Settings
 
