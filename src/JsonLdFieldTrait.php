@@ -169,15 +169,23 @@ trait JsonLdFieldTrait {
   }
 
   /**
-   * ContactPoint from the first section_contact_panel, or NULL.
+   * Organization contact data from the first section_contact_panel, or NULL.
    *
-   * Returned for NESTING under a Service/Organization object (jsonld plan §3 —
-   * never standalone). Emits only fields that are present and non-empty.
+   * Split by schema.org domain so the pieces attach where they are valid: a
+   * `ContactPoint` (reachable channels only — telephone/email) nests under the
+   * provider Organization, and the postal `address` is an Organization property
+   * in its own right (ContactPoint has no `address`). Free-text opening hours are
+   * intentionally NOT emitted: ContactPoint's `hoursAvailable` requires a
+   * structured OpeningHoursSpecification we cannot derive from a free-text field,
+   * and a wrong value is a worse signal than an absent one — the hours stay in
+   * the visible HTML (parity-safe). The first panel carrying any contact data
+   * wins; both pieces are present-and-non-empty gated.
    *
-   * @return array<string, mixed>|null
-   *   The ContactPoint object, or NULL when no panel carries contact data.
+   * @return array{contactPoint: array<string, mixed>|null, address: array<string, mixed>|null}|null
+   *   The contactPoint and address pieces to attach to the provider
+   *   Organization, or NULL when no panel carries contact data.
    */
-  protected function contactPointFromSections(NodeInterface $node, EntityViewDisplayInterface $display, JsonLdContext $context): ?array {
+  protected function organizationContactFromSections(NodeInterface $node, EntityViewDisplayInterface $display, JsonLdContext $context): ?array {
     if (!$this->hasValue($node, $display, 'field_sections')) {
       return NULL;
     }
@@ -186,29 +194,36 @@ trait JsonLdFieldTrait {
         continue;
       }
       $context->cacheability->addCacheableDependency($section);
-      $contact = ['@type' => 'ContactPoint'];
-      $contact_fields = [
+
+      // ContactPoint carries the reachable channels only (Organization-valid
+      // properties live on the Organization itself, below).
+      $contact_point = ['@type' => 'ContactPoint'];
+      $channels = [
         'field_section_phone' => 'telephone',
         'field_section_email' => 'email',
-        'field_section_hours' => 'openingHours',
       ];
-      foreach ($contact_fields as $field => $property) {
+      foreach ($channels as $field => $property) {
         if ($section->hasField($field) && !$section->get($field)->isEmpty()) {
           $value = $this->plainText((string) $section->get($field)->value);
           if ($value !== '') {
-            $contact[$property] = $value;
+            $contact_point[$property] = $value;
           }
         }
       }
+      // Only a ContactPoint with at least one channel beyond @type is useful.
+      $contact_point = count($contact_point) > 1 ? $contact_point : NULL;
+
+      // The postal address is an Organization property, not a ContactPoint one.
+      $address = NULL;
       if ($section->hasField('field_section_address') && !$section->get('field_section_address')->isEmpty()) {
-        $address = $this->plainText((string) $section->get('field_section_address')->value);
-        if ($address !== '') {
-          $contact['address'] = ['@type' => 'PostalAddress', 'streetAddress' => $address];
+        $street = $this->plainText((string) $section->get('field_section_address')->value);
+        if ($street !== '') {
+          $address = ['@type' => 'PostalAddress', 'streetAddress' => $street];
         }
       }
-      // Only return if it carries at least one contact property beyond @type.
-      if (count($contact) > 1) {
-        return $contact;
+
+      if ($contact_point !== NULL || $address !== NULL) {
+        return ['contactPoint' => $contact_point, 'address' => $address];
       }
     }
     return NULL;

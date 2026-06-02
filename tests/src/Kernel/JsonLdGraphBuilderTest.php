@@ -155,6 +155,53 @@ final class JsonLdGraphBuilderTest extends KernelTestBase {
   }
 
   /**
+   * A normalizer double that routes page-level properties via the context.
+   *
+   * Emits one primary Service and pushes each given property onto the WebPage
+   * through JsonLdContext::addWebPageProperty(), mirroring how the real
+   * normalizers relocate domain-mismatched metadata (e.g. reviewedBy) to the
+   * page spine.
+   *
+   * @param array<string, mixed> $webPageProperties
+   *   The page-level properties to route, keyed by schema.org property name.
+   */
+  private function pagePropertyNormalizer(array $webPageProperties): NodeNormalizerInterface {
+    return new class($webPageProperties) implements NodeNormalizerInterface {
+
+      /**
+       * @param array<string, mixed> $webPageProperties
+       *   The page-level properties to route.
+       */
+      public function __construct(
+        private readonly array $webPageProperties,
+      ) {}
+
+      /**
+       * {@inheritdoc}
+       */
+      public function applies(NodeInterface $node): bool {
+        return TRUE;
+      }
+
+      /**
+       * {@inheritdoc}
+       */
+      public function normalize(NodeInterface $node, EntityViewDisplayInterface $display, JsonLdContext $context): array {
+        foreach ($this->webPageProperties as $property => $value) {
+          $context->addWebPageProperty($property, $value);
+        }
+        return [[
+          '@type' => 'Service',
+          '@id' => $context->canonicalUrl . '#service',
+          'name' => 'Primary',
+        ],
+        ];
+      }
+
+    };
+  }
+
+  /**
    * Construct a builder with the given doubles and the real config factory.
    *
    * @param \Drupal\geo_starter_jsonld\Normalizer\NodeNormalizerInterface[] $normalizers
@@ -282,6 +329,55 @@ final class JsonLdGraphBuilderTest extends KernelTestBase {
     // normalisation of the backslash-u literal.
     $this->assertStringContainsString(trim(json_encode('<', JSON_HEX_TAG), '"'), $json);
     $this->assertStringContainsString(trim(json_encode('&', JSON_HEX_AMP), '"'), $json);
+  }
+
+  /**
+   * Page-level properties routed via the context land on the WebPage, not the
+   * primary entity, while the spine still links the primary by @id.
+   */
+  public function testContextWebPagePropertiesMergeOntoSpine(): void {
+    $node = $this->makeNode('Emergency assistance', TRUE);
+    $reviewed_by = ['@type' => 'Person', 'name' => 'Dr. Reviewer'];
+    $result = $this->builder([
+      $this->pagePropertyNormalizer([
+        'about' => [['@type' => 'Thing', 'name' => 'Food assistance']],
+        'reviewedBy' => $reviewed_by,
+      ]),
+    ])->build($node, $this->display);
+    $graph = $this->graphOf($result);
+
+    $webPage = $this->firstOfType($graph, 'WebPage');
+    $service = $this->firstOfType($graph, 'Service');
+    // The routed properties live on the page...
+    $this->assertSame($reviewed_by, $webPage['reviewedBy']);
+    $this->assertSame('Food assistance', $webPage['about'][0]['name']);
+    // ...and never leak onto the primary entity.
+    $this->assertArrayNotHasKey('reviewedBy', $service);
+    $this->assertArrayNotHasKey('about', $service);
+    // The spine still connects the graph by @id.
+    $this->assertSame($service['@id'], $webPage['mainEntity']['@id']);
+  }
+
+  /**
+   * Spine keys are authoritative: a routed property cannot overwrite the
+   * WebPage's own @id / url / name (union keeps the spine value).
+   */
+  public function testSpineKeysWinOverRoutedProperties(): void {
+    $node = $this->makeNode('Canonical name', TRUE);
+    $result = $this->builder([
+      $this->pagePropertyNormalizer([
+        'name' => 'Hijacked name',
+        'url' => 'https://evil.example/phishing',
+      ]),
+    ])->build($node, $this->display);
+    $graph = $this->graphOf($result);
+
+    $webPage = $this->firstOfType($graph, 'WebPage');
+    // The node title and canonical URL win over anything a normalizer routes.
+    $this->assertSame('Canonical name', $webPage['name']);
+    $this->assertSame($webPage['@id'], $webPage['url']);
+    $this->assertStringStartsWith('http', $webPage['url']);
+    $this->assertStringNotContainsString('evil.example', $webPage['url']);
   }
 
 }

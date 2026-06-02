@@ -57,12 +57,19 @@ final class StepListContributor implements ParagraphContributorInterface {
 
     $steps = [];
     $position = 0;
+    $name = '';
 
     foreach ($node->get('field_sections')->referencedEntities() as $section) {
       if ($section->bundle() !== 'section_step_list') {
         continue;
       }
       $context->cacheability->addCacheableDependency($section);
+      // The HowTo name is the step-list heading (Google requires HowTo.name; it
+      // is also better LLM context). First non-empty heading wins; absent is
+      // parity-safe — emit a nameless HowTo rather than fabricate one.
+      if ($name === '' && $section->hasField('field_section_heading') && !$section->get('field_section_heading')->isEmpty()) {
+        $name = $this->plainText((string) $section->get('field_section_heading')->value);
+      }
       if (!$section->hasField('field_section_steps') || $section->get('field_section_steps')->isEmpty()) {
         continue;
       }
@@ -94,13 +101,16 @@ final class StepListContributor implements ParagraphContributorInterface {
       return [];
     }
 
-    return [
-      [
-        '@type' => 'HowTo',
-        '@id' => $context->canonicalUrl . '#howto',
-        'step' => $steps,
-      ],
+    $howto = [
+      '@type' => 'HowTo',
+      '@id' => $context->canonicalUrl . '#howto',
     ];
+    if ($name !== '') {
+      $howto['name'] = $name;
+    }
+    $howto['step'] = $steps;
+
+    return [$howto];
   }
 
   /**

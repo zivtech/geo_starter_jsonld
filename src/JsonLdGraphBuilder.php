@@ -108,6 +108,10 @@ final class JsonLdGraphBuilder {
     if ($primaryId !== NULL) {
       $webPage['mainEntity'] = ['@id' => $primaryId];
     }
+    // Page-level properties a normalizer routed here (schema.org domain belongs
+    // on the page, not the primary entity — e.g. a Service's reviewedBy). The
+    // spine keys above always win; an empty bag is a no-op.
+    $webPage += $context->webPageProperties;
     array_unshift($graph, $webPage);
 
     $document = [

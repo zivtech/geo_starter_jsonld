@@ -58,8 +58,14 @@ final class ArticleNormalizer implements NodeNormalizerInterface {
       }
     }
 
-    // Reviewer is distinct from author (field_reviewed_by_name).
-    $article += $this->schemaReviewedBy($node, $display, $context);
+    // Reviewer is distinct from author (field_reviewed_by_name). reviewedBy is
+    // WebPage-domain-only (not CreativeWork), so even on an Article it belongs on
+    // the WebPage; its paired review rides along to keep them on one node. The
+    // remaining CreativeWork properties below (about, citation, dateModified,
+    // datePublished) are domain-valid on Article and stay here.
+    foreach ($this->schemaReviewedBy($node, $display, $context) as $property => $value) {
+      $context->addWebPageProperty($property, $value);
+    }
 
     if ($this->hasValue($node, $display, 'field_reviewed_date')) {
       $article['dateModified'] = $this->isoDate((string) $node->get('field_reviewed_date')->value);
