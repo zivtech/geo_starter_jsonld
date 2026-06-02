@@ -4,15 +4,19 @@
     "allowCompoundWords": false,
     "globRoot": ".",
     "minWordLength": 4,
-    "ignorePaths": [],
+    "ignorePaths": ["tools/schema-domain-check.py"],
     "dictionaries": [],
     "dictionaryDefinitions": [],
     "words": [
         "faqpage",
+        "findall",
+        "geostarter",
         "inspectable",
         "jsonld",
         "normalisation",
         "sanitisation",
+        "schemaorg",
+        "supertypes",
         "Köln"
     ],
     "flagWords": [

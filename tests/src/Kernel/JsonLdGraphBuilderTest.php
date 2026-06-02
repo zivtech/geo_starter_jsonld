@@ -332,8 +332,7 @@ final class JsonLdGraphBuilderTest extends KernelTestBase {
   }
 
   /**
-   * Page-level properties routed via the context land on the WebPage, not the
-   * primary entity, while the spine still links the primary by @id.
+   * Routed page-level properties land on the WebPage, not the primary entity.
    */
   public function testContextWebPagePropertiesMergeOntoSpine(): void {
     $node = $this->makeNode('Emergency assistance', TRUE);
@@ -359,8 +358,7 @@ final class JsonLdGraphBuilderTest extends KernelTestBase {
   }
 
   /**
-   * Spine keys are authoritative: a routed property cannot overwrite the
-   * WebPage's own @id / url / name (union keeps the spine value).
+   * Spine keys win: a routed property cannot overwrite @id / url / name.
    */
   public function testSpineKeysWinOverRoutedProperties(): void {
     $node = $this->makeNode('Canonical name', TRUE);

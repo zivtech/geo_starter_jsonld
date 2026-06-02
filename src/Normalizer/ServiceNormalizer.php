@@ -13,16 +13,16 @@ use Drupal\node\NodeInterface;
 /**
  * Normalizes a Service node to a schema.org Service object.
  *
- * Intentionally thin (SCHEMA_MAP.md / jsonld plan §2.1). The Service carries the
- * properties schema.org puts in its domain: name, description, potentialAction,
- * audience, and a provider Organization (which in turn hosts contactPoint and
- * address). Page-level CreativeWork metadata that Service is not in the domain
- * for — about, citation, dateModified, reviewedBy/review — is routed to the
- * WebPage via the build context (the WebPage links back through mainEntity).
- * The visibly-rendered field_problem_solved / field_eligibility have no faithful
- * schema.org property on Service and are deliberately omitted — a wrong property
- * is a worse GEO signal than an absent one, and emitting less than the visible
- * HTML is parity-safe.
+ * Intentionally thin (SCHEMA_MAP.md / jsonld plan §2.1). The Service carries
+ * the properties schema.org puts in its domain: name, description,
+ * potentialAction, audience, and a provider Organization (which in turn hosts
+ * contactPoint and address). Page-level CreativeWork metadata that Service is
+ * not in the domain for — about, citation, dateModified, reviewedBy/review —
+ * is routed to the WebPage via the build context (the WebPage links back
+ * through mainEntity). The visibly-rendered field_problem_solved /
+ * field_eligibility have no faithful schema.org property on Service and are
+ * deliberately omitted — a wrong property is a worse GEO signal than an absent
+ * one, and emitting less than the visible HTML is parity-safe.
  */
 final class ServiceNormalizer implements NodeNormalizerInterface {
 
@@ -85,7 +85,7 @@ final class ServiceNormalizer implements NodeNormalizerInterface {
       $context->addWebPageProperty('dateModified', $this->isoDate((string) $node->get('field_reviewed_date')->value));
     }
 
-    // reviewedBy and its paired review move together (never split across nodes).
+    // reviewedBy and its paired review move together (never split apart).
     foreach ($this->schemaReviewedBy($node, $display, $context) as $property => $value) {
       $context->addWebPageProperty($property, $value);
     }

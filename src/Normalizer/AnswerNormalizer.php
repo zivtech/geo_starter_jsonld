@@ -55,9 +55,9 @@ final class AnswerNormalizer implements NodeNormalizerInterface {
       $question['dateModified'] = $this->isoDate((string) $node->get('field_reviewed_date')->value);
     }
 
-    // reviewedBy is WebPage-domain-only (not CreativeWork), so even on a Question
-    // it belongs on the WebPage; its paired review rides along. dateModified and
-    // about/citation above are CreativeWork properties — valid on Question, kept.
+    // reviewedBy is WebPage-domain-only (not CreativeWork), so even on a
+    // Question it belongs on the WebPage; its paired review rides along.
+    // dateModified and about/citation above are CreativeWork props, kept.
     foreach ($this->schemaReviewedBy($node, $display, $context) as $property => $value) {
       $context->addWebPageProperty($property, $value);
     }

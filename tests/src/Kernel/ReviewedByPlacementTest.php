@@ -19,13 +19,14 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  *
  * `reviewedBy` is WebPage-domain-only in schema.org (not CreativeWork), so it
  * belongs on the WebPage for every bundle — never on the primary entity
- * (Service, Article, Question). This already regressed once (Question.reviewedBy
- * on Answer nodes, caught only by validating all node types). The test drives
- * the real container-wired builder + tagged normalizers for each emitting bundle
- * and asserts, generically, that the WebPage carries reviewedBy and no other
- * graph node does — so a future normalizer that merges it onto its entity fails
- * here. Only field_reviewed_by_name is fixtured; every other field the
- * normalizers read is hasField-guarded.
+ * (Service, Article, Question). This already regressed once
+ * (Question.reviewedBy on Answer nodes, caught only by validating all node
+ * types). The test drives the real container-wired builder + tagged
+ * normalizers for each emitting bundle and asserts, generically, that the
+ * WebPage carries reviewedBy and no other graph node does — so a future
+ * normalizer that merges it onto its entity fails here. Only the
+ * field_reviewed_by_name field is created; every other field the normalizers
+ * read is hasField-guarded.
  */
 #[Group('geo_starter_jsonld')]
 #[RunTestsInSeparateProcesses]
@@ -85,7 +86,7 @@ final class ReviewedByPlacementTest extends KernelTestBase {
    * The full-mode display for a bundle with the reviewer field rendered.
    *
    * Built in-memory only (the parity guard reads getComponent()); saving it
-   * would trigger dependency calculation against unconfigured formatters.
+   * would trigger dependency calculation against formatters it does not set.
    */
   private function displayFor(string $bundle): EntityViewDisplayInterface {
     return \Drupal::service('entity_display.repository')
@@ -106,7 +107,7 @@ final class ReviewedByPlacementTest extends KernelTestBase {
   }
 
   /**
-   * reviewedBy lands on the WebPage and never on the primary entity.
+   * Asserts reviewedBy lands on the WebPage, never on the primary entity.
    */
   public function testReviewedByOnlyEverAppearsOnTheWebPage(): void {
     foreach (self::BUNDLES as $bundle => $primaryType) {

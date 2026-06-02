@@ -174,10 +174,10 @@ trait JsonLdFieldTrait {
    * Split by schema.org domain so the pieces attach where they are valid: a
    * `ContactPoint` (reachable channels only — telephone/email) nests under the
    * provider Organization, and the postal `address` is an Organization property
-   * in its own right (ContactPoint has no `address`). Free-text opening hours are
-   * intentionally NOT emitted: ContactPoint's `hoursAvailable` requires a
-   * structured OpeningHoursSpecification we cannot derive from a free-text field,
-   * and a wrong value is a worse signal than an absent one — the hours stay in
+   * in its own right (ContactPoint has no `address`). Free-text opening hours
+   * are intentionally NOT emitted: ContactPoint's `hoursAvailable` needs a
+   * structured OpeningHoursSpecification we cannot derive from free text, and a
+   * wrong value is a worse signal than an absent one — the hours stay in
    * the visible HTML (parity-safe). The first panel carrying any contact data
    * wins; both pieces are present-and-non-empty gated.
    *
