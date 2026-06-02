@@ -56,15 +56,31 @@ $check('WebPage.mainEntity links the Service @id', ($webpage['mainEntity']['@id'
 $check('FAQPage present with mainEntity length == 2 (marquee)', $faqpage !== NULL && count($faqpage['mainEntity'] ?? []) === 2);
 $howto = $by_type('HowTo')[0] ?? NULL;
 $check('HowTo present with 2 steps (from section_step_list)', $howto !== NULL && count($howto['step'] ?? []) === 2);
+$check('HowTo has a name (from section_step_list heading)', !empty($howto['name'] ?? NULL));
 $item_list = $by_type('ItemList')[0] ?? NULL;
 $check('ItemList present with >=1 ListItem (from section_card_grid)', $item_list !== NULL && count($item_list['itemListElement'] ?? []) >= 1);
-$check('Service nests a ContactPoint (from section_contact_panel)', ($service['contactPoint']['@type'] ?? NULL) === 'ContactPoint' && !empty($service['contactPoint']['telephone']));
-$check('Service has >=1 citation', !empty($service['citation']));
+
+// Contact data nests under the provider Organization (schema.org domain), not
+// the Service or the ContactPoint.
+$provider = $service['provider'] ?? [];
+$check('Service.provider nests a ContactPoint (from section_contact_panel)', ($provider['contactPoint']['@type'] ?? NULL) === 'ContactPoint' && !empty($provider['contactPoint']['telephone']));
+$check('Service.provider carries a PostalAddress', ($provider['address']['@type'] ?? NULL) === 'PostalAddress');
+$check('provider.contactPoint omits free-text openingHours', !isset($provider['contactPoint']['openingHours']));
+
+// Domain-correctness guards: page-level CreativeWork metadata lives on the
+// WebPage (a CreativeWork), never on the non-CreativeWork Service. These lock
+// the 2026-06-02 relocation against regression at the full-surface level.
+$check('WebPage has >=1 citation (moved off Service)', !empty($webpage['citation']));
+$check('WebPage carries reviewedBy (WebPage-domain-only)', ($webpage['reviewedBy']['@type'] ?? NULL) === 'Person');
+$check(
+  'Service carries none of reviewedBy/citation/about/dateModified (moved to WebPage)',
+  !isset($service['reviewedBy']) && !isset($service['citation']) && !isset($service['about']) && !isset($service['dateModified']),
+);
 
 // Every citation @id must resolve to a CreativeWork at that @id on its own
 // page.
 $resolved = TRUE;
-foreach ($service['citation'] ?? [] as $citation) {
+foreach ($webpage['citation'] ?? [] as $citation) {
   $id = $citation['@id'] ?? '';
   $found = FALSE;
   foreach (\Drupal::entityTypeManager()->getStorage('node')->loadByProperties(['type' => 'evidence_source']) as $evidence) {
@@ -97,15 +113,16 @@ if ($refs) {
   $url = $suppressed->toUrl()->toString();
   $suppressed->setUnpublished();
   $after = $builder->build($node, $display);
-  $after_service = (static function (array $g) {
+  // Citations live on the WebPage now, so read the suppression result there.
+  $after_webpage = (static function (array $g) {
     foreach ($g as $o) {
-      if (($o['@type'] ?? '') === 'Service') {
+      if (($o['@type'] ?? '') === 'WebPage') {
         return $o;
       }
     }
     return [];
   })(json_decode($after['json'], TRUE)['@graph']);
-  $ids = array_column($after_service['citation'] ?? [], '@id');
+  $ids = array_column($after_webpage['citation'] ?? [], '@id');
   $dropped = TRUE;
   foreach ($ids as $id) {
     if (str_starts_with($id, $url . '#')) {
