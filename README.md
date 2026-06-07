@@ -8,6 +8,28 @@ This is the companion module for the `drupal/geo_starter` recipe. A Drupal 11
 recipe is a configuration artifact and cannot ship a module on disk, so this
 ships as its own Composer package that the recipe requires.
 
+## Stability contract
+
+From `1.0.0-beta1`, within the `1.x` line:
+
+1. **Frozen:** the top-level entity-type set (`Service`, `Question`/`Answer`,
+   `Article`, `CreativeWork`, `WebPage`, `FAQPage`, `HowTo`, `ItemList`), the
+   `@id` scheme (`{url}` for the `WebPage`, `{url}#evidence-source` for the
+   `CreativeWork`), and the **parity rule** — never emit beyond the visibly
+   rendered HTML. New top-level types may be added.
+2. **Not frozen:** nested helper sub-objects (`Person`, `Organization`,
+   `Audience`, `ContactPoint`, `PostalAddress`, `OpeningHoursSpecification`,
+   `HowToStep`, `ListItem`, …) and intra-graph **property placement**.
+   schema.org- and rich-result-correctness fixes may move, correct, or drop
+   such properties within the `@graph`; every change ships with a release note
+   and a regression test. (Precedents: alpha2 relocated
+   `reviewedBy`/`about`/`citation`/`dateModified` to the `WebPage`; beta1
+   dropped a rating-less `Review`.)
+3. **Settings keys are stable;** new keys default to current behavior.
+
+Releases are fresh-install previews — no in-place upgrade path ships (the
+Drupal CMS site-template posture). See `CHANGELOG.md` for per-release notes.
+
 ## What it emits
 
 One schema.org `@graph` per page, attached as a single

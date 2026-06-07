@@ -2,8 +2,26 @@
 
 All notable changes to drupal/geo_starter_jsonld are documented here.
 
-## Unreleased
+## 1.0.0-beta1 - 2026-06-07
 
+First beta. Enters the stability contract (README → "Stability contract"):
+within 1.x the top-level entity-type set, the `@id` scheme, and the
+visible-HTML parity rule are frozen; nested helper sub-objects and intra-graph
+property placement may still be corrected for schema.org/rich-result validity,
+each with a release note + regression test.
+
+- **Dropped the rating-less `Review` object** (provenance emission). The
+  Service/Answer/Article graph emitted both `reviewedBy` (Person) and a paired
+  `review` → `Review` with no `reviewRating`; Google's Rich Results Test flags
+  that as an **invalid Review snippet** on every governed page (valid schema,
+  invalid rich result — validator.schema.org passed it). `reviewedBy` plus the
+  `dateModified` each normalizer already emits on its primary entity fully
+  carry the provenance intent, so the `Review` is dropped at its single source
+  (`JsonLdFieldTrait::schemaReviewedBy()`). Guarded by a graph-level regression
+  assertion in `ReviewedByPlacementTest` (no node emits a `review` property).
+  Permitted under contract rule 2 (nested sub-object correction). Re-validated:
+  validator.schema.org 0/0 on all five snippets, offline domain check 0/0 on
+  all four node types, probe 23/23.
 - New `geo_starter_jsonld_markup` submodule (WS-B rendering pass): semantic,
   lightly-styled visible-HTML templates for the recipe's ten section paragraph
   bundles — h2/h3 heading hierarchy, open `<dl>` FAQ (no collapse, per the
