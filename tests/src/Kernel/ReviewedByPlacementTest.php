@@ -146,6 +146,19 @@ final class ReviewedByPlacementTest extends KernelTestBase {
           );
         }
       }
+
+      // No node may carry a `review` property. Provenance is reviewedBy +
+      // dateModified only; a bare `Review` (no reviewRating) is a valid schema
+      // but an INVALID Google Review-snippet rich result, flagged on every
+      // governed page by the Rich Results Test (WS-D Phase 1, 2026-06-07).
+      // This guards the regression at the graph level for every node type.
+      foreach ($graph as $object) {
+        $this->assertArrayNotHasKey(
+          'review',
+          $object,
+          "$bundle: no `review` (rating-less Review) may be emitted on {$object['@type']}",
+        );
+      }
     }
   }
 

@@ -14,7 +14,7 @@ use Drupal\node\NodeInterface;
  * Normalizes an Article node to a schema.org Article (jsonld plan §2.3).
  *
  * Author and reviewer are two DISTINCT fields and must not be conflated:
- * author ← field_author_name, reviewedBy/review ← field_reviewed_by_name.
+ * author ← field_author_name, reviewedBy ← field_reviewed_by_name.
  */
 final class ArticleNormalizer implements NodeNormalizerInterface {
 
@@ -60,9 +60,10 @@ final class ArticleNormalizer implements NodeNormalizerInterface {
 
     // Reviewer is distinct from author (field_reviewed_by_name). reviewedBy is
     // WebPage-domain-only (not CreativeWork), so even on an Article it lives on
-    // the WebPage; its paired review rides along to keep them on one node. The
-    // remaining CreativeWork properties below (about, citation, dateModified,
-    // datePublished) are domain-valid on Article and stay here.
+    // the WebPage. No Review object is emitted (freshness is carried by the
+    // Article's own dateModified below). The remaining CreativeWork properties
+    // (about, citation, dateModified, datePublished) are domain-valid on
+    // Article and stay here.
     foreach ($this->schemaReviewedBy($node, $display, $context) as $property => $value) {
       $context->addWebPageProperty($property, $value);
     }

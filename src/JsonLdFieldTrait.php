@@ -142,15 +142,23 @@ trait JsonLdFieldTrait {
   }
 
   /**
-   * Builds `reviewedBy` + `review` from the field_reviewed_by_* fields.
+   * Builds `reviewedBy` from the field_reviewed_by_name field.
    *
    * Conservative per the GEO trust mapping: emits only a Person name (we have
    * a name string, not an identity — never a fabricated @id or sameAs).
    * Returns an associative array to merge into the entity object, or [] when
    * there is no reviewer.
    *
+   * Emits `reviewedBy` only — NOT a paired `review` (Review) object. A bare
+   * `Review` with no `reviewRating` is a valid schema but an INVALID Google
+   * Review-snippet rich result ("Missing field reviewRating"), flagged on
+   * every Service/Answer/Article page by the Rich Results Test (WS-D Phase 1,
+   * 2026-06-07). The intent is provenance ("reviewed by X on date Y"), fully
+   * carried by `reviewedBy` (person) plus the `dateModified` each normalizer
+   * already emits on its primary entity — there is no rating, so no `Review`.
+   *
    * @return array<string, mixed>
-   *   The reviewedBy/review properties, or an empty array.
+   *   The reviewedBy property, or an empty array.
    */
   protected function schemaReviewedBy(NodeInterface $node, EntityViewDisplayInterface $display, JsonLdContext $context): array {
     if (!$this->hasValue($node, $display, 'field_reviewed_by_name')) {
@@ -160,12 +168,7 @@ trait JsonLdFieldTrait {
     if ($name === '') {
       return [];
     }
-    $person = ['@type' => 'Person', 'name' => $name];
-    $review = ['@type' => 'Review', 'author' => $person];
-    if ($this->hasValue($node, $display, 'field_reviewed_date')) {
-      $review['dateModified'] = $this->isoDate((string) $node->get('field_reviewed_date')->value);
-    }
-    return ['reviewedBy' => $person, 'review' => $review];
+    return ['reviewedBy' => ['@type' => 'Person', 'name' => $name]];
   }
 
   /**

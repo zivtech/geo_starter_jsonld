@@ -56,8 +56,9 @@ final class AnswerNormalizer implements NodeNormalizerInterface {
     }
 
     // reviewedBy is WebPage-domain-only (not CreativeWork), so even on a
-    // Question it belongs on the WebPage; its paired review rides along.
-    // dateModified and about/citation above are CreativeWork props, kept.
+    // Question it belongs on the WebPage. No Review object is emitted
+    // (freshness is the Question's own dateModified above). dateModified and
+    // about/citation above are CreativeWork props, kept.
     foreach ($this->schemaReviewedBy($node, $display, $context) as $property => $value) {
       $context->addWebPageProperty($property, $value);
     }

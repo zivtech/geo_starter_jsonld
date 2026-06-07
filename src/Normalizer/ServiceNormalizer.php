@@ -19,7 +19,7 @@ use Drupal\node\NodeInterface;
  * contactPoint, address, and the contact point's hoursAvailable; hours with no
  * contact point fall back to the Service). Page-level CreativeWork metadata
  * that Service is not in the domain for — about, citation, dateModified,
- * reviewedBy/review —
+ * reviewedBy —
  * is routed to the WebPage via the build context (the WebPage links back
  * through mainEntity). The visibly-rendered field_problem_solved /
  * field_eligibility have no faithful schema.org property on Service and are
@@ -87,7 +87,8 @@ final class ServiceNormalizer implements NodeNormalizerInterface {
       $context->addWebPageProperty('dateModified', $this->isoDate((string) $node->get('field_reviewed_date')->value));
     }
 
-    // reviewedBy and its paired review move together (never split apart).
+    // reviewedBy is WebPage-domain-only; route it there (dateModified above
+    // already carries freshness on the WebPage — no Review object is emitted).
     foreach ($this->schemaReviewedBy($node, $display, $context) as $property => $value) {
       $context->addWebPageProperty($property, $value);
     }
