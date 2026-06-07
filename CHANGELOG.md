@@ -2,6 +2,27 @@
 
 All notable changes to drupal/geo_starter_jsonld are documented here.
 
+## Unreleased
+
+- New `geo_starter_jsonld_markup` submodule (WS-B rendering pass): semantic,
+  lightly-styled visible-HTML templates for the recipe's ten section paragraph
+  bundles — h2/h3 heading hierarchy, open `<dl>` FAQ (no collapse, per the
+  "no hidden claims" parity rule), ordered `<ol>` steps, `<address>` contact
+  panel, severity-accented alert (`role="note"`), button-styled CTA, card
+  grid, and media/text two-column layout. One lazily-attached ~6 KB CSS
+  library consumes Mercury design tokens with hard fallbacks (no
+  Tailwind-utility dependence; usable under any theme).
+- Registration via `hook_theme()` with `'base hook' => 'paragraph'` — module
+  template suggestion files are NOT auto-discovered (theme-only mechanism);
+  the `.module` ships exactly this one hook, zero preprocess, zero JS.
+- Independently installable/uninstallable: emission-only installs of
+  `geo_starter_jsonld` are unaffected; uninstalling the submodule reverts to
+  core's classless rendering. Parity guard re-proven: `tools/jsonld-probe.php`
+  23/23 after all template work.
+- New kernel test `SectionMarkupTest` (36 assertions) guards the
+  `hook_theme()` registration through the real view-builder render path.
+- phpcs (Drupal, DrupalPractice): clean.
+
 ## 1.0.0-alpha3 - 2026-06-02
 
 - Emit schema.org `hoursAvailable` (`OpeningHoursSpecification`) for a Service's

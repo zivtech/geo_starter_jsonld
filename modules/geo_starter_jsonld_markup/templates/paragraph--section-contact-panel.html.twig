@@ -1,0 +1,43 @@
+{#
+/**
+ * @file
+ * section_contact_panel: heading + <address> contact block.
+ *
+ * Every field prints through its configured formatter: email stays the
+ * email_mailto <a>, hours stay the office_hours module's accessible table
+ * (we wrap, never rebuild), address keeps its text formatting. The phone is
+ * a plain string field — we do NOT invent a tel: link the formatter doesn't
+ * produce (markup-only rule; switching the formatter is a config follow-up,
+ * not a template hack). Parity: every emitted ContactPoint field (telephone,
+ * email, address, hours) is visibly rendered here (WS-B plan §4.7).
+ */
+#}
+{{ attach_library('geo_starter_jsonld_markup/sections') }}
+<section{{ attributes.addClass('geo-section', 'geo-section--contact') }}>
+  {% if content.field_section_heading|render|trim %}
+    <h2 class="geo-section__title">{{ content.field_section_heading }}</h2>
+  {% endif %}
+  {# divs, not p: field formatters emit block elements, and a div inside p is
+     invalid — browsers auto-close the p and eject the content from the styled
+     wrapper (found at the WS-B screenshot gate). #}
+  <address class="geo-contact">
+    {% if content.field_section_contact_name|render|trim %}
+      <div class="geo-contact__name">{{ content.field_section_contact_name }}</div>
+    {% endif %}
+    {% if content.field_section_phone|render|trim %}
+      <div class="geo-contact__phone">{{ content.field_section_phone }}</div>
+    {% endif %}
+    {% if content.field_section_email|render|trim %}
+      <div class="geo-contact__email">{{ content.field_section_email }}</div>
+    {% endif %}
+    {% if content.field_section_address|render|trim %}
+      <div class="geo-contact__address">{{ content.field_section_address }}</div>
+    {% endif %}
+    {% if content.field_section_hours|render|trim %}
+      <div class="geo-contact__hours">{{ content.field_section_hours }}</div>
+    {% endif %}
+    {% if content.field_section_link|render|trim %}
+      <div class="geo-contact__link">{{ content.field_section_link }}</div>
+    {% endif %}
+  </address>
+</section>

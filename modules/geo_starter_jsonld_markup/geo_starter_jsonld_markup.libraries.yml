@@ -1,0 +1,8 @@
+# Single component library, lazy-attached from the paragraph templates via
+# attach_library() — NOT listed in .info.yml, so it loads only on pages that
+# actually render a section paragraph (see WS-B plan §6.2). No JS by design.
+sections:
+  version: VERSION
+  css:
+    component:
+      css/sections.css: {}

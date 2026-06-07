@@ -1,0 +1,24 @@
+{#
+/**
+ * @file
+ * geo_starter_section (generic): kicker eyebrow + heading + body.
+ *
+ * Markup-only transformation (WS-B plan §4.1): fields print through
+ * content.* so formatter, sanitization, and cacheability are preserved.
+ * Empty-guards avoid empty chrome for optional fields; they never suppress
+ * a populated field (parity guard).
+ */
+#}
+{{ attach_library('geo_starter_jsonld_markup/sections') }}
+<section{{ attributes.addClass('geo-section', 'geo-section--generic') }}>
+  {# div, not p: the string formatter emits a block element, and a div inside
+     p is invalid — browsers auto-close the p and eject the text from the
+     styled wrapper (found at the WS-B screenshot gate). #}
+  {% if content.field_section_kicker|render|trim %}
+    <div class="geo-section__kicker">{{ content.field_section_kicker }}</div>
+  {% endif %}
+  {% if content.field_section_heading|render|trim %}
+    <h2 class="geo-section__title">{{ content.field_section_heading }}</h2>
+  {% endif %}
+  <div class="geo-section__body">{{ content.field_section_body }}</div>
+</section>

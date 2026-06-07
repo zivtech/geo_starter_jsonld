@@ -1,0 +1,24 @@
+{#
+/**
+ * @file
+ * section_media_text: heading + media/body two-column section.
+ *
+ * field_section_media_position is HIDDEN in the view-display (not rendered,
+ * not in content.*). Reading its raw value for a layout-only BEM modifier is
+ * display logic, not content: it changes which side the media sits on, emits
+ * nothing, and hides nothing — parity-safe per the critic-confirmed call
+ * (WS-B plan §4.9). Mobile stacks media then text; ≥768px goes two-column
+ * with the modifier choosing the side.
+ */
+#}
+{{ attach_library('geo_starter_jsonld_markup/sections') }}
+{% set pos = paragraph.field_section_media_position.value|default('right') %}
+<section{{ attributes.addClass('geo-section', 'geo-section--mediatext', 'geo-mediatext--media-' ~ pos) }}>
+  {% if content.field_section_heading|render|trim %}
+    <h2 class="geo-section__title">{{ content.field_section_heading }}</h2>
+  {% endif %}
+  <div class="geo-mediatext__grid">
+    <div class="geo-mediatext__media">{{ content.field_section_media }}</div>
+    <div class="geo-mediatext__body">{{ content.field_section_body }}</div>
+  </div>
+</section>

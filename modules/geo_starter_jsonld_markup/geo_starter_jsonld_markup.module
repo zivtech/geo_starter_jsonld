@@ -1,0 +1,51 @@
+<?php
+
+/**
+ * @file
+ * Registers semantic visible-HTML templates for GEO Starter section bundles.
+ *
+ * This file is intentionally registration-only: hook_theme() with 'base hook'
+ * entries is the ONLY hook it ships. Template auto-discovery from a templates/
+ * directory works for THEMES only — Drupal's theme registry merges modules'
+ * hook_theme() output exclusively (Registry::processExtension(); the
+ * directory-scan fallback is gated to theme/base_theme). A module template
+ * without a matching hook_theme() entry is invisible and silently falls
+ * through to core's classless template. See the WS-B plan §2.4 (CRITICAL-1).
+ *
+ * Every entry below MUST have a matching template file in templates/ —
+ * a registered hook whose template file is missing throws a Twig LoaderError
+ * on any page rendering that bundle. Entries and files track 1:1.
+ *
+ * Zero preprocess functions by design: all display logic (empty-guards,
+ * modifier-class selection from field values) lives in the Twig templates.
+ */
+
+declare(strict_types=1);
+
+/**
+ * Implements hook_theme().
+ *
+ * Registers per-bundle paragraph templates as suggestions of the existing
+ * `paragraph` theme hook ('base hook'), so the paragraphs module's runtime
+ * suggestions (paragraph__BUNDLE) resolve to this module's templates whenever
+ * the active theme does not override them. Template filenames derive from the
+ * hook names via strtr($hook, '_', '-'): paragraph__section_faq maps to
+ * templates/paragraph--section-faq.html.twig.
+ *
+ * 10 paragraph templates: 8 parent bundles + 2 child bundles
+ * (section_faq_item, section_step_item — placed only inside their parents).
+ */
+function geo_starter_jsonld_markup_theme(): array {
+  return [
+    'paragraph__geo_starter_section' => ['base hook' => 'paragraph'],
+    'paragraph__section_faq' => ['base hook' => 'paragraph'],
+    'paragraph__section_faq_item' => ['base hook' => 'paragraph'],
+    'paragraph__section_step_list' => ['base hook' => 'paragraph'],
+    'paragraph__section_step_item' => ['base hook' => 'paragraph'],
+    'paragraph__section_card_grid' => ['base hook' => 'paragraph'],
+    'paragraph__section_cta' => ['base hook' => 'paragraph'],
+    'paragraph__section_alert' => ['base hook' => 'paragraph'],
+    'paragraph__section_contact_panel' => ['base hook' => 'paragraph'],
+    'paragraph__section_media_text' => ['base hook' => 'paragraph'],
+  ];
+}

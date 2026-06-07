@@ -1,0 +1,20 @@
+{#
+/**
+ * @file
+ * section_card_grid: heading + grid of linked node titles.
+ *
+ * The cards field uses the entity_reference_label formatter (link: true) —
+ * it renders linked titles in the classless field template's div structure.
+ * We wrap the whole rendered field and let CSS grid lay out the item divs;
+ * we do NOT fake <li> elements around formatter output we don't control
+ * (WS-B plan §4.4). Parity: the visible linked titles match the JSON-LD
+ * ItemList url+name of the same nodes.
+ */
+#}
+{{ attach_library('geo_starter_jsonld_markup/sections') }}
+<section{{ attributes.addClass('geo-section', 'geo-section--cards') }}>
+  {% if content.field_section_heading|render|trim %}
+    <h2 class="geo-section__title">{{ content.field_section_heading }}</h2>
+  {% endif %}
+  <div class="geo-cards">{{ content.field_section_cards }}</div>
+</section>

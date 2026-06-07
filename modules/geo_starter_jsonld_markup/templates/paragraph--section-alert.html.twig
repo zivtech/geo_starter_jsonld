@@ -1,0 +1,22 @@
+{#
+/**
+ * @file
+ * section_alert: severity-accented callout (level + heading + body).
+ *
+ * The level (info|success|warning|danger) drives a BEM modifier class read
+ * from the field value in Twig — display logic, not content (WS-B plan
+ * §4.6). The level is NOT printed as visible text: section_alert emits no
+ * distinct JSON-LD type, so no visible↔emitted mismatch is possible.
+ * role="note" — these are static page callouts, not live regions
+ * (role="alert" would over-announce). Meaning is carried by the heading
+ * text, never by color alone.
+ */
+#}
+{{ attach_library('geo_starter_jsonld_markup/sections') }}
+{% set level = paragraph.field_section_alert_level.value|default('info') %}
+<aside role="note"{{ attributes.addClass('geo-section', 'geo-alert', 'geo-alert--' ~ level) }}>
+  {% if content.field_section_heading|render|trim %}
+    <h2 class="geo-alert__title">{{ content.field_section_heading }}</h2>
+  {% endif %}
+  <div class="geo-alert__body">{{ content.field_section_body }}</div>
+</aside>

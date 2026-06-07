@@ -1,0 +1,19 @@
+{#
+/**
+ * @file
+ * section_step_item child: one step as <li> with name (h3), text, image.
+ *
+ * The paragraph root IS the <li> so {{ attributes }} land on the list item
+ * and the parent <ol> contains only li children (WS-B plan §4.3 validity
+ * note). The step image is optional; its alt text comes from the media
+ * entity. Markup-only: fields print through content.* (formatter-preserving).
+ */
+#}
+{{ attach_library('geo_starter_jsonld_markup/sections') }}
+<li{{ attributes.addClass('geo-steps__item') }}>
+  <h3 class="geo-steps__name">{{ content.field_section_step_name }}</h3>
+  <div class="geo-steps__text">{{ content.field_section_step_text }}</div>
+  {% if content.field_section_step_image|render|trim %}
+    <div class="geo-steps__image">{{ content.field_section_step_image }}</div>
+  {% endif %}
+</li>

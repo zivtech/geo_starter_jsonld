@@ -1,0 +1,20 @@
+{#
+/**
+ * @file
+ * section_cta: contextual mid-body call-to-action (heading + body + link).
+ *
+ * <aside> is the right element: a contextual, tangentially-related action
+ * (WS-B plan §4.5). The link is the formatter's real <a href> — keyboard and
+ * focus behavior come free; CSS button-styles it and MUST keep a visible
+ * :focus-visible outline. No schema.org type is emitted for CTAs (parity-safe;
+ * the link is visible body content).
+ */
+#}
+{{ attach_library('geo_starter_jsonld_markup/sections') }}
+<aside{{ attributes.addClass('geo-section', 'geo-section--cta') }}>
+  {% if content.field_section_heading|render|trim %}
+    <h2 class="geo-section__title">{{ content.field_section_heading }}</h2>
+  {% endif %}
+  <div class="geo-cta__body">{{ content.field_section_body }}</div>
+  <div class="geo-cta__action">{{ content.field_section_link }}</div>
+</aside>

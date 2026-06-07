@@ -1,0 +1,26 @@
+{#
+/**
+ * @file
+ * section_step_list parent: heading + ordered list of steps (HowTo source).
+ *
+ * The <ol> iterates the steps field's numeric children directly instead of
+ * printing the whole field: core's classless field template would insert
+ * wrapper <div>s between <ol> and the <li> children, which violates the ol
+ * content model (only li permitted) and can break list semantics for
+ * assistive technology. Each child paragraph still renders through its own
+ * formatter/template (root element <li>) and carries its own cacheability —
+ * markup-only, parity-safe. Step order = delta order = ol order, matching
+ * the JSON-LD HowToStep position derivation (WS-B plan §4.3).
+ */
+#}
+{{ attach_library('geo_starter_jsonld_markup/sections') }}
+<section{{ attributes.addClass('geo-section', 'geo-section--steps') }}>
+  {% if content.field_section_heading|render|trim %}
+    <h2 class="geo-section__title">{{ content.field_section_heading }}</h2>
+  {% endif %}
+  <ol class="geo-steps">
+    {%- for key, item in content.field_section_steps -%}
+      {%- if key matches '/^\\d+$/' -%}{{ item }}{%- endif -%}
+    {%- endfor -%}
+  </ol>
+</section>

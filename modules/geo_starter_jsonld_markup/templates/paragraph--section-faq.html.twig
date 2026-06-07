@@ -1,0 +1,30 @@
+{#
+/**
+ * @file
+ * section_faq parent: heading + open definition list of Q/A pairs.
+ *
+ * FAQ renders OPEN by decision — no <details>/<summary>, nothing collapsed.
+ * The project's "no hidden claims" parity rule is stricter than Google's
+ * collapsed-FAQ allowance: the JSON-LD FAQPage acceptedAnswer.text must match
+ * answer text that is visible in the initial DOM paint, with no disclosure
+ * ambiguity. See WS-B plan §4.2.
+ *
+ * The <dl> iterates the items field's numeric children directly instead of
+ * printing the whole field: core's classless field template would insert
+ * wrapper <div>s that violate the <dl> content model (a dl permits only
+ * dt/dd groups or single-level div groupings). Each child paragraph still
+ * renders through its own formatter/template and carries its own
+ * cacheability — markup-only, parity-safe (WS-B as-built note).
+ */
+#}
+{{ attach_library('geo_starter_jsonld_markup/sections') }}
+<section{{ attributes.addClass('geo-section', 'geo-section--faq') }}>
+  {% if content.field_section_heading|render|trim %}
+    <h2 class="geo-section__title">{{ content.field_section_heading }}</h2>
+  {% endif %}
+  <dl class="geo-faq">
+    {%- for key, item in content.field_section_items -%}
+      {%- if key matches '/^\\d+$/' -%}{{ item }}{%- endif -%}
+    {%- endfor -%}
+  </dl>
+</section>

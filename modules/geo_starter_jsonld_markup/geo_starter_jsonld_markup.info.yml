@@ -1,0 +1,8 @@
+name: 'GEO Starter JSON-LD Markup'
+type: module
+description: 'Semantic, accessible visible-HTML templates + scoped CSS for GEO Starter section paragraphs and node field-stacks. Keeps visible HTML in parity with the JSON-LD emitted by geo_starter_jsonld.'
+package: 'GEO Starter'
+core_version_requirement: ^11
+dependencies:
+  - geo_starter_jsonld:geo_starter_jsonld
+  - paragraphs:paragraphs

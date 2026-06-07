@@ -1,0 +1,17 @@
+{#
+/**
+ * @file
+ * section_faq_item child: one Q/A pair as <dt>/<dd> inside the parent <dl>.
+ *
+ * The paragraph root must carry {{ attributes }}, hence the <div> grouping
+ * wrapper — the HTML5 living standard permits <div> children of <dl>, each
+ * containing one dt+dd group. See WS-B plan §4.2 validity note; if the field
+ * wrapper nesting from the parent's entity_reference_revisions render proves
+ * non-conforming at the Task-0 gate, the documented fallback applies.
+ */
+#}
+{{ attach_library('geo_starter_jsonld_markup/sections') }}
+<div{{ attributes.addClass('geo-faq__item') }}>
+  <dt class="geo-faq__q">{{ content.field_section_question }}</dt>
+  <dd class="geo-faq__a">{{ content.field_section_answer }}</dd>
+</div>

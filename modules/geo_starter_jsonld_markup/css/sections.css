@@ -1,0 +1,260 @@
+/**
+ * GEO Starter section components — BEM-ish, geo- namespaced, token-consuming.
+ *
+ * Consumes Mercury's design tokens (CSS custom properties) with hard
+ * fallbacks on every reference: native look under Mercury, graceful under any
+ * other theme. No Tailwind utilities (they are not in Mercury's compiled
+ * build). One shared breakpoint, mobile-first (375px base; 768px upgrade for
+ * the two genuinely multi-column components). Budget: < 8 KB uncompressed.
+ *
+ * Note: Mercury's Tailwind preflight strips list markers and margins, so the
+ * steps <ol> restores decimal numbering explicitly.
+ */
+
+/* ---------------------------------------------------------------- base --- */
+
+.geo-section {
+  --geo-gap: 1rem;
+  margin-block: calc(var(--geo-gap) * 2);
+  padding-block-start: calc(var(--geo-gap) * 1.5);
+  border-block-start: 1px solid var(--border, #e2e2e2);
+}
+
+.geo-section__title {
+  margin-block: 0 var(--geo-gap);
+}
+
+.geo-section__kicker {
+  margin-block: 0 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--primary, #1a56db);
+}
+
+/* ----------------------------------------------------------------- faq --- */
+
+.geo-faq {
+  margin-block: 0;
+}
+
+.geo-faq__item {
+  padding-block: calc(var(--geo-gap) * 0.75);
+}
+
+.geo-faq__item + .geo-faq__item {
+  border-block-start: 1px solid var(--border, #e2e2e2);
+}
+
+.geo-faq__q {
+  margin: 0;
+  font-weight: 600;
+}
+
+.geo-faq__a {
+  margin: 0.375rem 0 0;
+}
+
+/* --------------------------------------------------------------- steps --- */
+
+.geo-steps {
+  margin-block: 0;
+  padding-inline-start: 1.75rem;
+  list-style: decimal; /* restore numbering stripped by Tailwind preflight */
+}
+
+.geo-steps__item {
+  padding-block: calc(var(--geo-gap) * 0.5);
+}
+
+.geo-steps__item::marker {
+  font-weight: 600;
+  color: var(--primary, #1a56db);
+}
+
+.geo-steps__name {
+  margin-block: 0 0.25rem;
+}
+
+.geo-steps__text {
+  margin: 0;
+}
+
+.geo-steps__image {
+  margin-block-start: 0.75rem;
+}
+
+.geo-steps__image img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius, 0.5rem);
+}
+
+/* --------------------------------------------------------------- cards --- */
+
+/* The field renders one wrapper div containing one div per linked item
+   (core classless field template); the wrapper becomes the grid. */
+.geo-cards > div {
+  display: grid;
+  gap: var(--geo-gap, 1rem);
+  grid-template-columns: 1fr;
+}
+
+.geo-cards > div > div {
+  padding: var(--geo-gap, 1rem);
+  border: 1px solid var(--border, #e2e2e2);
+  border-radius: var(--radius, 0.5rem);
+}
+
+.geo-cards a {
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--primary, #1a56db);
+}
+
+.geo-cards a:hover,
+.geo-cards a:focus-visible {
+  text-decoration: underline;
+}
+
+/* ----------------------------------------------------------------- cta --- */
+
+.geo-section--cta {
+  padding: var(--geo-gap, 1rem) calc(var(--geo-gap, 1rem) * 1.25);
+  border: 1px solid var(--border, #e2e2e2);
+  border-radius: var(--radius, 0.5rem);
+  background: #eff6ff; /* fallback for browsers without color-mix() */
+  background: color-mix(in srgb, var(--primary, #1a56db) 5%, transparent);
+}
+
+.geo-cta__body {
+  margin-block-end: var(--geo-gap, 1rem);
+}
+
+.geo-cta__action a {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius, 0.5rem);
+  background: var(--primary, #1a56db);
+  color: var(--primary-foreground, #fff);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.geo-cta__action a:hover {
+  filter: brightness(1.1);
+}
+
+/* Keep a visible focus indicator on the button-styled link (a11y). */
+.geo-cta__action a:focus-visible {
+  outline: 2px solid var(--ring, var(--primary, #1a56db));
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------- alert --- */
+
+.geo-alert {
+  --geo-alert-accent: #1d4ed8;
+  --geo-alert-bg: #eff6ff;
+  padding: var(--geo-gap, 1rem) calc(var(--geo-gap, 1rem) * 1.25);
+  border: 1px solid var(--border, #e2e2e2);
+  border-inline-start: 4px solid var(--geo-alert-accent);
+  border-radius: var(--radius, 0.5rem);
+  background: var(--geo-alert-bg);
+}
+
+.geo-alert--success {
+  --geo-alert-accent: #15803d;
+  --geo-alert-bg: #f0fdf4;
+}
+
+.geo-alert--warning {
+  --geo-alert-accent: #a16207;
+  --geo-alert-bg: #fefce8;
+}
+
+.geo-alert--danger {
+  --geo-alert-accent: #b91c1c;
+  --geo-alert-bg: #fef2f2;
+}
+
+.geo-alert__title {
+  margin-block: 0 0.5rem;
+  font-size: 1.125rem;
+  color: var(--geo-alert-accent);
+}
+
+.geo-alert__body {
+  margin: 0;
+  /* Body text stays foreground-on-tint: AA-safe regardless of accent. */
+  color: var(--foreground, #1f2937);
+}
+
+/* ------------------------------------------------------------- contact --- */
+
+.geo-contact {
+  font-style: normal; /* address element default italics off */
+}
+
+.geo-contact__name {
+  font-weight: 600;
+  margin-block: 0 0.25rem;
+}
+
+.geo-contact__phone,
+.geo-contact__email {
+  margin-block: 0 0.25rem;
+}
+
+.geo-contact__address,
+.geo-contact__hours,
+.geo-contact__link {
+  margin-block-start: 0.75rem;
+}
+
+.geo-contact__hours table {
+  border-collapse: collapse;
+}
+
+.geo-contact__hours td,
+.geo-contact__hours th {
+  padding: 0.125rem 0.75rem 0.125rem 0;
+}
+
+/* ----------------------------------------------------------- mediatext --- */
+
+.geo-mediatext__grid {
+  display: grid;
+  gap: var(--geo-gap, 1rem);
+  grid-template-columns: 1fr; /* mobile: media stacks above text */
+}
+
+.geo-mediatext__media img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius, 0.5rem);
+}
+
+/* ---------------------------------------------------------- breakpoint --- */
+
+@media (min-width: 768px) {
+  .geo-cards > div {
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  }
+
+  .geo-mediatext__grid {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+
+  /* Author-chosen media side (layout-only read of the hidden position
+     field; see the media-text template). */
+  .geo-mediatext--media-right .geo-mediatext__media {
+    order: 2;
+  }
+
+  .geo-mediatext--media-right .geo-mediatext__body {
+    order: 1;
+  }
+}
