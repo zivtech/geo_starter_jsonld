@@ -2,6 +2,20 @@
 
 All notable changes to drupal/geo_starter_jsonld are documented here.
 
+## 1.0.0-rc1 - 2026-06-08
+
+First release candidate for the stable `1.0.0`. **No functional change from
+`1.0.0-beta1`** — the code, config, and schema are the same tree (`git diff
+1.0.0-beta1` is empty outside this file and `README.md`). This candidate exists
+to prove the published artifact under a release-candidate floor before the
+irreversible stable tag; the `1.x` stability contract (README → "Stability
+contract") now stands as the stable promise rather than a beta preview.
+
+- No code, config, or emission change. PHPUnit (Unit/Kernel/Functional, incl.
+  `ReviewedByPlacementTest` and `SectionMarkupTest`), the acceptance probe
+  (23/23), and the offline schema.org domain check remain green from the beta1
+  tree.
+
 ## 1.0.0-beta1 - 2026-06-07
 
 First beta. Enters the stability contract (README → "Stability contract"):

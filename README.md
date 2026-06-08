@@ -27,7 +27,7 @@ From `1.0.0-beta1`, within the `1.x` line:
    dropped a rating-less `Review`.)
 3. **Settings keys are stable;** new keys default to current behavior.
 
-Releases are fresh-install previews — no in-place upgrade path ships (the
+Releases are fresh-install-only — no in-place upgrade path ships (the
 Drupal CMS site-template posture). See `CHANGELOG.md` for per-release notes.
 
 ## What it emits
