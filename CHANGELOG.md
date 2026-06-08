@@ -2,6 +2,13 @@
 
 All notable changes to drupal/geo_starter_jsonld are documented here.
 
+## 1.0.0 - 2026-06-08
+
+First stable release. Promoted unchanged from `1.0.0-rc1`, whose released-artifact
+proof confirmed the published package resolves and installs from drupal.org. No
+code change since `1.0.0-beta1`; the `1.x` stability contract (README →
+"Stability contract") now stands as the stable promise.
+
 ## 1.0.0-rc1 - 2026-06-08
 
 First release candidate for the stable `1.0.0`. **No functional change from
