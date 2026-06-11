@@ -84,12 +84,48 @@ JSON-LD, so office_hours' own `office_hours_schema_org` formatter stays off to
 avoid double-emitting opening hours.) It makes governed content inspectable; it
 promises no outcomes.
 
+## llms.txt (submodule)
+
+The `geo_starter_jsonld_llms` submodule serves a spec-conformant
+[`/llms.txt`](https://llmstxt.org) — a markdown site index of your governed
+content for LLM crawlers and agents. Where the JSON-LD answers "what is this
+page", llms.txt answers "what does this site offer": every published,
+anonymously-viewable Service, Article, Answer, and Evidence Source, as a
+markdown link to the node's canonical URL with a one-line description drawn
+from the same governed field the JSON-LD normalizers read (`field_summary`,
+`field_direct_answer`, `field_publisher`). Auto-generated, no curation UI.
+
+- Services, Articles, and Answers list under their own H2 sections; Evidence
+  Sources list under the spec's literal `## Optional` section — the one
+  heading llms.txt assigns machine semantics to (skippable when an agent
+  needs shorter context), which is exactly the role of secondary
+  citation-resolution targets.
+- The parity invariant here is access, not display: the index only ever lists
+  pages the requesting user could itself fetch (access-checked, published-only
+  queries). Descriptions are the plain-text projection of the governed field,
+  not a byte-for-byte mirror of the rendered page — an index is not a render.
+- Fully page-cacheable for anonymous crawlers; the response invalidates when
+  any listed node changes, bundle membership changes (add/remove/unpublish),
+  or the site name/slogan/summary changes.
+
+**Coexistence with contrib `llms_txt`:** Pronovix's
+[`llms_txt`](https://www.drupal.org/project/llms_txt) module also registers a
+route at `/llms.txt`. Drupal does not error on duplicate route paths — one
+route silently wins, so co-enabling the two leaves which document gets served
+effectively undefined. Pick one: this submodule for zero-config output over
+the governed bundles, or `llms_txt` for its broader, manually-curated feature
+set.
+
 ## Settings
 
 `geo_starter_jsonld.settings` (simple config): `service_type`, `article_type`,
 `faqpage_on_service` (default `true`), `faqpage_on_answer` (default `false`),
 `emit_howto`, `organization_name` (falls back to the site name),
 `evidence_default_type`.
+
+`geo_starter_jsonld_llms.settings` (submodule, simple config): `site_summary`
+— the llms.txt blockquote text; empty (the default) falls back to the site
+slogan, then to a generic line built from the site name.
 
 ## Release validation
 

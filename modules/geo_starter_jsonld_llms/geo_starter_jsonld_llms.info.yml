@@ -1,0 +1,8 @@
+name: 'GEO Starter JSON-LD llms.txt'
+type: module
+description: 'Serves a spec-conformant /llms.txt site index of GEO Starter governed content for LLM crawlers and agents. The site-level companion to the per-page JSON-LD.'
+package: 'GEO Starter'
+core_version_requirement: ^11
+dependencies:
+  - drupal:node
+  - geo_starter_jsonld:geo_starter_jsonld

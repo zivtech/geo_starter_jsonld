@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * @file
+ * Serves /llms.txt, a markdown site index of GEO Starter governed content.
+ *
+ * This submodule is routing-only: geo_starter_jsonld_llms.routing.yml maps
+ * /llms.txt to LlmsTxtController, and all content logic lives in the
+ * geo_starter_jsonld_llms.builder service, per the "thin hooks, logic in
+ * services" rule. No hooks are implemented in this release.
+ */
+
+declare(strict_types=1);

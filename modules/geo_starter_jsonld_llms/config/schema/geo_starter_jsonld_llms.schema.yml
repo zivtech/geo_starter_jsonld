@@ -1,0 +1,7 @@
+geo_starter_jsonld_llms.settings:
+  type: config_object
+  label: 'GEO Starter JSON-LD llms.txt settings'
+  mapping:
+    site_summary:
+      type: string
+      label: 'Site summary for the llms.txt blockquote (falls back to the site slogan, then a generic line, when empty)'

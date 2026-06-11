@@ -2,6 +2,44 @@
 
 All notable changes to drupal/geo_starter_jsonld are documented here.
 
+## 1.1.0 - 2026-06-10
+
+- New `geo_starter_jsonld_llms` submodule: serves a spec-conformant
+  [`/llms.txt`](https://llmstxt.org) markdown site index of the four governed
+  bundles for LLM crawlers and agents — the site-level companion to the
+  per-page JSON-LD. Each entry links a node's canonical absolute URL with a
+  one-line description from the bundle's governed field (`field_summary`,
+  `field_direct_answer`, `field_publisher` — the same sources the JSON-LD
+  normalizers read). Published + access-checked nodes only, title-ordered,
+  auto-generated, no curation UI. Evidence Sources list under the spec's
+  literal `## Optional` heading (its one machine-actionable semantic:
+  skippable for shorter agent contexts).
+- Architecture mirrors the parent: thin route → `LlmsTxtController` →
+  `geo_starter_jsonld_llms.builder` service → pure `LlmsTxtDocument` value
+  object owning the markdown grammar (bracket escaping, newline collapse,
+  200-char word-boundary truncation, empty-section omission). `final`
+  classes, `declare(strict_types=1)`, constructor DI.
+- Cache-correct for anonymous page caching: per-bundle `node_list:{bundle}`
+  tags (bubbled even for empty bundles, so the first node of a bundle
+  invalidates the document), listed-node tags, `config:system.site` +
+  settings dependencies, and `url.site` + `user.permissions` contexts
+  (the listing is access-checked, so the cache varies by permission set).
+- One new setting: `geo_starter_jsonld_llms.settings:site_summary` (blockquote
+  text; empty default falls back to the site slogan, then a generic line).
+- Does **not** depend on or integrate with contrib `llms_txt` (Pronovix),
+  which registers the same `/llms.txt` path. Drupal does not error on
+  duplicate route paths — one route silently wins — so the two must not be
+  co-enabled. Documented in README.
+- Parent module emission, config, and schema are **unchanged** — purely
+  additive under the 1.x stability contract; the submodule is independently
+  installable/uninstallable.
+- New tests: `LlmsTxtDocumentTest` (Unit — markdown grammar),
+  `LlmsTxtBuilderTest` (Kernel — published/access gating, per-bundle
+  description sources, cache tags/contexts incl. empty-bundle list-tag
+  bubbling, section cap), `LlmsTxtRouteTest` (Functional — anonymous 200,
+  `text/markdown` content type, unpublished exclusion, cacheability headers,
+  page-cache HIT and tag-driven invalidation on node edit).
+
 ## 1.0.0 - 2026-06-08
 
 First stable release. Promoted unchanged from `1.0.0-rc1`, whose released-artifact

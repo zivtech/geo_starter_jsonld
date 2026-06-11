@@ -1,0 +1,11 @@
+# /llms.txt is public by route; the *listing* is gated per-entry by the
+# builder's access-checked entity queries (anyone may fetch the index; it only
+# ever lists nodes the requesting user could itself view). HEAD is allowed
+# implicitly wherever GET is.
+geo_starter_jsonld_llms.llms_txt:
+  path: '/llms.txt'
+  defaults:
+    _controller: 'Drupal\geo_starter_jsonld_llms\Controller\LlmsTxtController::render'
+  methods: [GET]
+  requirements:
+    _access: 'TRUE'
