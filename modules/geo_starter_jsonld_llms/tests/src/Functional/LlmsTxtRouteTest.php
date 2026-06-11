@@ -33,10 +33,10 @@ final class LlmsTxtRouteTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    *
-   * file/entity_reference_revisions/paragraphs are not used by this submodule;
-   * they are required so the parent geo_starter_jsonld module (a hard
-   * dependency) installs cleanly. page_cache is enabled deliberately: the
-   * anonymous-crawler cache posture is part of this test's contract.
+   * The file/entity_reference_revisions/paragraphs modules are not used by
+   * this submodule; they are required so the parent geo_starter_jsonld module
+   * (a hard dependency) installs cleanly. page_cache is enabled deliberately:
+   * the anonymous-crawler cache posture is part of this test's contract.
    */
   protected static $modules = [
     'node',
@@ -74,27 +74,27 @@ final class LlmsTxtRouteTest extends BrowserTestBase {
     $this->createStringField('answer', 'field_direct_answer');
     $this->createStringField('evidence_source', 'field_publisher');
 
-    $this->createNode([
+    $this->createGovernedNode([
       'type' => 'service',
       'title' => 'Crisis support',
       'field_summary' => 'Round-the-clock crisis line.',
     ]);
-    $this->createNode([
+    $this->createGovernedNode([
       'type' => 'article',
       'title' => 'Vaccine guidance',
       'field_summary' => 'What the schedule covers.',
     ]);
-    $this->createNode([
+    $this->createGovernedNode([
       'type' => 'answer',
       'title' => 'How do I appeal?',
       'field_direct_answer' => 'File the appeal form within 30 days.',
     ]);
-    $this->createNode([
+    $this->createGovernedNode([
       'type' => 'evidence_source',
       'title' => 'Immunization schedule',
       'field_publisher' => 'CDC',
     ]);
-    $this->createNode([
+    $this->createGovernedNode([
       'type' => 'article',
       'title' => 'Hidden draft',
       'status' => NodeInterface::NOT_PUBLISHED,
@@ -122,10 +122,13 @@ final class LlmsTxtRouteTest extends BrowserTestBase {
   /**
    * Create a node with sane defaults.
    *
+   * Not named createNode(): BrowserTestBase inherits a protected helper of
+   * that name, and PHP fatals on narrowing its visibility to private.
+   *
    * @param array<string, mixed> $values
    *   Node values; 'type' and 'title' are required by callers.
    */
-  private function createNode(array $values): NodeInterface {
+  private function createGovernedNode(array $values): NodeInterface {
     $node = Node::create($values + ['status' => NodeInterface::PUBLISHED]);
     $node->save();
     return $node;

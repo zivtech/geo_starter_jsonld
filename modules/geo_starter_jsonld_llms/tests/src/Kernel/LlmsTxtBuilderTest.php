@@ -36,9 +36,10 @@ final class LlmsTxtBuilderTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    *
-   * file/entity_reference_revisions/paragraphs are not used by this submodule;
-   * they are required so the parent geo_starter_jsonld module (a hard
-   * dependency whose container wiring this test boots) builds cleanly.
+   * The file/entity_reference_revisions/paragraphs modules are not used by
+   * this submodule; they are required so the parent geo_starter_jsonld module
+   * (a hard dependency whose container wiring this test boots) builds
+   * cleanly.
    */
   protected static $modules = [
     'system',
@@ -104,7 +105,7 @@ final class LlmsTxtBuilderTest extends KernelTestBase {
    * @param array<string, mixed> $values
    *   Node values; 'type' and 'title' are required by callers.
    */
-  private function createNode(array $values): NodeInterface {
+  private function createGovernedNode(array $values): NodeInterface {
     $node = Node::create($values + ['status' => NodeInterface::PUBLISHED]);
     $node->save();
     return $node;
@@ -121,8 +122,8 @@ final class LlmsTxtBuilderTest extends KernelTestBase {
    * Unpublished nodes never appear; published ones do.
    */
   public function testPublishedOnly(): void {
-    $this->createNode(['type' => 'article', 'title' => 'Visible article']);
-    $this->createNode([
+    $this->createGovernedNode(['type' => 'article', 'title' => 'Visible article']);
+    $this->createGovernedNode([
       'type' => 'article',
       'title' => 'Hidden draft',
       'status' => NodeInterface::NOT_PUBLISHED,
@@ -137,22 +138,22 @@ final class LlmsTxtBuilderTest extends KernelTestBase {
    * Each bundle's description comes from its governed field.
    */
   public function testDescriptionSourcePerBundle(): void {
-    $this->createNode([
+    $this->createGovernedNode([
       'type' => 'service',
       'title' => 'Crisis support',
       'field_summary' => 'Round-the-clock crisis line.',
     ]);
-    $this->createNode([
+    $this->createGovernedNode([
       'type' => 'article',
       'title' => 'Vaccine guidance',
       'field_summary' => 'What the schedule covers.',
     ]);
-    $this->createNode([
+    $this->createGovernedNode([
       'type' => 'answer',
       'title' => 'How do I appeal?',
       'field_direct_answer' => 'File the appeal form within 30 days.',
     ]);
-    $this->createNode([
+    $this->createGovernedNode([
       'type' => 'evidence_source',
       'title' => 'Immunization schedule',
       'field_publisher' => 'CDC',
@@ -169,8 +170,8 @@ final class LlmsTxtBuilderTest extends KernelTestBase {
    * Evidence Sources sit under the spec's literal "Optional" heading, last.
    */
   public function testEvidenceSourcesUnderOptionalSection(): void {
-    $this->createNode(['type' => 'service', 'title' => 'Crisis support']);
-    $evidence = $this->createNode([
+    $this->createGovernedNode(['type' => 'service', 'title' => 'Crisis support']);
+    $evidence = $this->createGovernedNode([
       'type' => 'evidence_source',
       'title' => 'Immunization schedule',
       'field_publisher' => 'CDC',
@@ -193,11 +194,12 @@ final class LlmsTxtBuilderTest extends KernelTestBase {
   }
 
   /**
-   * A node with an empty description field emits a bare link — absent beats
-   * wrong.
+   * A node with an empty description field emits a bare link.
+   *
+   * Absent beats wrong.
    */
   public function testMissingDescriptionDegradesGracefully(): void {
-    $this->createNode(['type' => 'article', 'title' => 'No summary article']);
+    $this->createGovernedNode(['type' => 'article', 'title' => 'No summary article']);
 
     $this->assertMatchesRegularExpression(
       '/^- \[No summary article\]\(http[^)]+\)$/m',
@@ -209,7 +211,7 @@ final class LlmsTxtBuilderTest extends KernelTestBase {
    * The cache metadata carries every tag and context the response needs.
    */
   public function testCacheMetadata(): void {
-    $node = $this->createNode(['type' => 'article', 'title' => 'Tagged article']);
+    $node = $this->createGovernedNode(['type' => 'article', 'title' => 'Tagged article']);
 
     $cacheability = \Drupal::service('geo_starter_jsonld_llms.builder')->build()['cacheability'];
     $tags = $cacheability->getCacheTags();
@@ -264,7 +266,7 @@ final class LlmsTxtBuilderTest extends KernelTestBase {
    */
   public function testPerSectionCap(): void {
     foreach (['Alpha service', 'Beta service', 'Gamma service'] as $title) {
-      $this->createNode(['type' => 'service', 'title' => $title]);
+      $this->createGovernedNode(['type' => 'service', 'title' => $title]);
     }
 
     $builder = new LlmsTxtBuilder(
