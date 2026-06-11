@@ -19,6 +19,7 @@
         "jsonld",
         "llms",
         "llmstxt",
+        "mediatext",
         "Pronovix",
         "networkidle",
         "normalisation",
@@ -26,7 +27,9 @@
         "schemaorg",
         "starthours",
         "supertypes",
+        "unconfigured",
         "valhrs",
+        "wordseven",
         "Köln"
     ],
     "flagWords": [
