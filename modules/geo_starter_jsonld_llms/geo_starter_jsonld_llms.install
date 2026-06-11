@@ -1,0 +1,38 @@
+<?php
+
+/**
+ * @file
+ * Install-time and runtime requirements for geo_starter_jsonld_llms.
+ *
+ * The legacy hook below covers Drupal <= 11.2, where the modern mechanisms
+ * do not exist yet. On Drupal 11.3+ the #[LegacyRequirementsHook] attribute
+ * keeps it inert and deprecation-free, and the same guard is provided by
+ * src/Install/Requirements/GeoStarterJsonldLlmsRequirements.php (install
+ * phase) and hook_runtime_requirements() in the .module file (runtime
+ * phase). Drupal 11.2 invokes both paths; the duplicate entries share one
+ * requirements key, so they merge.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Hook\Attribute\LegacyRequirementsHook;
+
+/**
+ * Implements hook_requirements().
+ */
+#[LegacyRequirementsHook]
+function geo_starter_jsonld_llms_requirements(string $phase): array {
+  $requirements = [];
+  if ($phase !== 'install' && $phase !== 'runtime') {
+    return $requirements;
+  }
+  if (\Drupal::moduleHandler()->moduleExists('llms_txt')) {
+    $requirements['geo_starter_jsonld_llms_route_collision'] = [
+      'title' => t('GEO Starter llms.txt'),
+      'value' => t('Route collision with the llms_txt module'),
+      'description' => t('Both geo_starter_jsonld_llms and llms_txt register the /llms.txt path. Drupal silently serves only one of them. Uninstall one of the two modules.'),
+      'severity' => REQUIREMENT_ERROR,
+    ];
+  }
+  return $requirements;
+}

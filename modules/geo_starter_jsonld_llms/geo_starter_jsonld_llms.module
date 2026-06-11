@@ -7,7 +7,32 @@
  * This submodule is routing-only: geo_starter_jsonld_llms.routing.yml maps
  * /llms.txt to LlmsTxtController, and all content logic lives in the
  * geo_starter_jsonld_llms.builder service, per the "thin hooks, logic in
- * services" rule. No hooks are implemented in this release.
+ * services" rule. The only hook implemented is the runtime requirements
+ * guard against the contrib llms_txt module, which registers the same
+ * /llms.txt path.
  */
 
 declare(strict_types=1);
+
+use Drupal\Core\Extension\Requirement\RequirementSeverity;
+
+/**
+ * Implements hook_runtime_requirements().
+ *
+ * Drupal 11.2+ status-report counterpart of the install-time guard in
+ * src/Install/Requirements/. On Drupal <= 11.2 the legacy
+ * hook_requirements() in the .install file covers the runtime phase
+ * instead.
+ */
+function geo_starter_jsonld_llms_runtime_requirements(): array {
+  $requirements = [];
+  if (\Drupal::moduleHandler()->moduleExists('llms_txt')) {
+    $requirements['geo_starter_jsonld_llms_route_collision'] = [
+      'title' => t('GEO Starter llms.txt'),
+      'value' => t('Route collision with the llms_txt module'),
+      'description' => t('Both geo_starter_jsonld_llms and llms_txt register the /llms.txt path. Drupal silently serves only one of them. Uninstall one of the two modules.'),
+      'severity' => RequirementSeverity::Error,
+    ];
+  }
+  return $requirements;
+}
