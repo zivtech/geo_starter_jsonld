@@ -2,7 +2,7 @@
 
 All notable changes to drupal/geo_starter_jsonld are documented here.
 
-## 1.1.0 - 2026-06-10
+## 1.1.0 - 2026-06-11
 
 - New `geo_starter_jsonld_llms` submodule: serves a spec-conformant
   [`/llms.txt`](https://llmstxt.org) markdown site index of the four governed
@@ -39,6 +39,13 @@ All notable changes to drupal/geo_starter_jsonld are documented here.
   bubbling, section cap), `LlmsTxtRouteTest` (Functional — anonymous 200,
   `text/markdown` content type, unpublished exclusion, cacheability headers,
   page-cache HIT and tag-driven invalidation on node edit).
+- Release-validation fixes, test/lint only — no runtime change: the llms test
+  suites' private `createNode()` helpers became `createGovernedNode()` (Drupal
+  11.3's `BrowserTestBase` ships a protected `createNode()`, and the private
+  override fataled the drupal.org phpunit job before any test ran), plus phpcs
+  doc-comment fixes in the same files. Also greened the two lint jobs that had
+  been red-but-allowed since 1.0.0: markup-submodule CSS property order
+  (stylelint, visual output unchanged) and cspell dictionary words.
 
 ## 1.0.0 - 2026-06-08
 
