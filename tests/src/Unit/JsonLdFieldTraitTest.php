@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\Group;
 /**
  * Unit-tests the pure, state-free helpers in JsonLdFieldTrait.
  *
- * These three helpers carry the JSON-LD parity/sanitisation guarantees: text is
+ * These three helpers carry the JSON-LD parity/sanitization guarantees: text is
  * stripped of markup before it can enter a JSON string, and dates are emitted
  * in a stable ISO 8601 (UTC) shape. They touch no entity/container state, so
  * they are tested in isolation with an anonymous class that exposes them

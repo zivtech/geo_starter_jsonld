@@ -326,7 +326,7 @@ final class JsonLdGraphBuilderTest extends KernelTestBase {
     $this->assertStringNotContainsString('&', $json);
     // ...they are hex-escaped instead (JSON_HEX_TAG | JSON_HEX_AMP). The
     // expected escape sequences are computed, not typed, to avoid editor
-    // normalisation of the backslash-u literal.
+    // normalization of the backslash-u literal.
     $this->assertStringContainsString(trim(json_encode('<', JSON_HEX_TAG), '"'), $json);
     $this->assertStringContainsString(trim(json_encode('&', JSON_HEX_AMP), '"'), $json);
   }
