@@ -123,7 +123,8 @@ final class LlmsTxtRouteTest extends BrowserTestBase {
    * Create a node with sane defaults.
    *
    * Not named createNode(): BrowserTestBase inherits a protected helper of
-   * that name, and PHP fatals on narrowing its visibility to private.
+   * that name, and PHP raises a fatal error when a subclass narrows its
+   * visibility to private.
    *
    * @param array<string, mixed> $values
    *   Node values; 'type' and 'title' are required by callers.
