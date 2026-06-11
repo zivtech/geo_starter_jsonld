@@ -62,13 +62,25 @@ final class ServiceNormalizer implements NodeNormalizerInterface {
 
     if ($this->hasValue($node, $display, 'field_next_action')) {
       $link = $node->get('field_next_action')->first();
-      $target = $link->getUrl()->setAbsolute()->toString();
-      $title = trim((string) $link->title);
-      $action = ['@type' => 'Action', 'target' => $target];
-      if ($title !== '') {
-        $action['name'] = $title;
+      try {
+        $generated = $link->getUrl()->setAbsolute()->toString(TRUE);
+        $context->cacheability->addCacheableDependency($generated);
+        $target = $generated->getGeneratedUrl();
       }
-      $service['potentialAction'] = $action;
+      catch (\InvalidArgumentException $e) {
+        // A stored URI the Url factory rejects (migrated/programmatic content
+        // bypasses widget validation). Skip the potentialAction entirely rather
+        // than failing the whole page render.
+        $target = '';
+      }
+      if ($target !== '') {
+        $title = trim((string) $link->title);
+        $action = ['@type' => 'Action', 'target' => $target];
+        if ($title !== '') {
+          $action['name'] = $title;
+        }
+        $service['potentialAction'] = $action;
+      }
     }
 
     // Page-level CreativeWork metadata: a Service is not a CreativeWork, so

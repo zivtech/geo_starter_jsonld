@@ -49,7 +49,15 @@ final class EvidenceSourceNormalizer implements NodeNormalizerInterface {
     // The external source link is asserted exactly once, here at the source, as
     // both url and sameAs (matching the visibly rendered source link).
     if ($this->hasValue($node, $display, 'field_source_url')) {
-      $source = $node->get('field_source_url')->first()->getUrl()->setAbsolute()->toString();
+      try {
+        $source = $node->get('field_source_url')->first()->getUrl()->setAbsolute()->toString();
+      }
+      catch (\InvalidArgumentException $e) {
+        // A stored URI the Url factory rejects (migrated/programmatic content
+        // bypasses widget validation). Emit the CreativeWork without url/sameAs
+        // rather than failing the whole page render.
+        $source = '';
+      }
       if ($source !== '') {
         $creative_work['url'] = $source;
         $creative_work['sameAs'] = $source;
