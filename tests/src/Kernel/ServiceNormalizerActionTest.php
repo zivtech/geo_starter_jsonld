@@ -20,7 +20,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 /**
  * Tests ServiceNormalizer potentialAction URL cacheability and malformed guard.
  *
- * Exercises two behaviours that unit tests cannot reach without a real router:
+ * Exercises two behaviors that unit tests cannot reach without a real router:
  * (1) toString(TRUE) for an internal URI generates a GeneratedUrl whose
  * cacheability (url.site context, route cache tags) lands in the build context;
  * (2) a stored URI that the Url factory rejects degrades cleanly to "no
