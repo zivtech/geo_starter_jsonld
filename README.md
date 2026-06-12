@@ -73,6 +73,11 @@ probe both guard that placement.
   contributors (tagged `geo_starter_jsonld.paragraph_contributor`), cache
   metadata, and fail-closed JSON encoding.
 - Add a new type by registering a tagged service — no plugin manager.
+- Why this is hand-rolled rather than built on `schemadotorg`,
+  `schema_metatag`, or `json_ld_schema` — and why the llms.txt submodule does
+  not depend on the contrib generators — is recorded, with explicit reopen
+  conditions, in
+  [ADR 001](docs/adr/001-make-buy-jsonld-core-and-llms.md).
 
 ## What it does not do
 
