@@ -1,1 +1,4 @@
 .DS_Store
+
+# Advisor/planning artifacts — kept locally, excluded from the public repo.
+/plans/
