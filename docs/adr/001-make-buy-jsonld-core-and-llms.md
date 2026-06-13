@@ -8,6 +8,14 @@ Retroactive — both decisions were implicit at implementation time (alpha1 ship
 2026-05-30; llms submodule landed in 1.1.0, 2026-06-11). This ADR records the
 reasoning and establishes explicit reopen conditions.
 
+**Correction (2026-06-13):** A code-level review of the three JSON-LD modules
+(repos cloned and read) corrected this ADR's schemadotorg reasoning and removed a
+factual error — a cited `ai_schemadotorg_jsonld` submodule that does not exist.
+The *decision* (hand-roll) is unchanged; the *justification* is now render-parity
++ dependency risk, not content-model ownership, and the reopen trigger was
+rewritten to be module-agnostic. Changed sections below: Decision 1
+(schemadotorg), Evidence, Data Confidence, and the reopen conditions.
+
 ## Context
 
 `geo_starter_jsonld` is a zero-config companion to the `geo_starter` recipe. It
@@ -61,11 +69,22 @@ from scratch rather than building on any existing JSON-LD contrib.
 Three alternatives were evaluated:
 
 *schemadotorg (Schema.org Blueprints):* Schema-first content modeling, JSON-LD
-output, JSON:API integration, actively developed with an AI companion submodule.
-Eliminated because it wants to own the content model — it is a schema-first
-content modeling tool, and the recipe already owns the content model. Adopting it
-would require abandoning the recipe's bundle structure or maintaining a complex
-mapping layer. The zero-config posture would be lost.
+output, JSON:API integration. **Eliminated — but the original reasoning was wrong
+(2026-06-13 code-level review of `1.0.0-alpha37`; see Correction above).** The
+claim that it "wants to own the content model" is false: its `SchemaDotOrgMapping`
+config entity attaches to *pre-existing* bundles and its JSON-LD builder is a
+mapping-driven consumer, so the recipe's frozen bundles could be kept. It also
+already ships two of this module's three signature patterns — the WebPage-spine
+(`schemadotorg_additional_mappings` wraps the primary entity as a `WebPage`'s
+`mainEntity`) and a paragraph-composition pipeline (`schemadotorg_paragraphs` /
+`schemadotorg_layout_paragraphs`). The real, durable blockers are: (1)
+**render-parity** — `SchemaDotOrgJsonLdBuilder::buildMappedEntity()` emits from
+field *values* gated on field *access*, never on view-display placement, and it
+fires on the moderation `latest-version` route, so it cannot satisfy the parity
+rule without post-hoc filtering; and (2) **dependency risk** — alpha for ~4 years
+with no stable release and no security-advisory coverage, so binding a production
+correctness invariant to it is imprudent. The lost zero-config posture is a minor
+factor; render-parity is the decisive one.
 
 *schema_metatag (Schema.org Metatag):* Mature, token-driven JSON-LD via the
 Metatag module. Eliminated because token resolution cannot satisfy the render-parity
@@ -122,10 +141,14 @@ code-level reviews. See Data Confidence for the implications of that scope.
 
 *JSON-LD core:*
 
-- `schemadotorg` content-model-first architecture: drupal.org/project/schemadotorg
-  — the project page documents that it generates content types and fields from
-  Schema.org types; the `ai_schemadotorg_jsonld` submodule ships within the same
-  project.
+- `schemadotorg` architecture — **code-level review (2026-06-13)** of
+  `1.0.0-alpha37`: `SchemaDotOrgMapping` (`src/Entity/SchemaDotOrgMapping.php`)
+  maps existing bundles; `SchemaDotOrgJsonLdBuilder::buildMappedEntity()` emits
+  from field values gated on field access (no view-display gating);
+  `schemadotorg_additional_mappings` implements the WebPage `mainEntity` spine;
+  `schemadotorg_paragraphs` / `schemadotorg_layout_paragraphs` provide paragraph
+  composition. **Correction:** the `ai_schemadotorg_jsonld` submodule cited in the
+  original draft does not exist in the project.
 - `schema_metatag` token-driven emission: drupal.org/project/schema_metatag —
   token resolution model is documented in the project README; token resolution is
   request-time field-value projection, not render-path output.
@@ -166,12 +189,15 @@ code-level reviews. See Data Confidence for the implications of that scope.
 
 ## Data Confidence
 
-JSON-LD core: **High** for schemadotorg and schema_metatag elimination — the
-architectural incompatibility (content-model ownership; token vs. render-path
-emission) is structural, not conjecture. **Medium** for json_ld_schema — evaluated
-at project-page/README level, not code-level; the "thin benefit" conclusion could
-be wrong if the module has ecosystem features not surfaced in the project page.
-Recommend a code-level review before any reopen.
+JSON-LD core: **High** for schema_metatag elimination — token-vs-render-path
+emission is structural, confirmed at code level (no `hook_entity_view`, no
+view-display awareness). **schemadotorg:** the original "content-model ownership"
+reasoning was wrong (see Correction — 2026-06-13 code-level review); elimination
+now rests on render-parity (field-value/access-gated emission, which also fires on
+the moderation route) and alpha/no-SA dependency risk. **json_ld_schema:**
+code-level review confirms the original conclusion — zero shipped plugins (all are
+test fixtures), feature-complete and minimally maintained, no schema-correctness
+ecosystem; the reopen condition is further from being met, not closer.
 
 llms.txt submodule: **Medium.** Five modules evaluated at project-page level only;
 no code-level review of `llms_txt_gen` was performed. The `## Optional` semantic
@@ -194,10 +220,17 @@ configuration since this evaluation, the reopen condition below may already be m
 
 *Reopen conditions — JSON-LD core:*
 
-- If `json_ld_schema` lands an active ecosystem of schema-correctness plugins
-  covering WebPage-spine, paragraph composition, or parity-gating patterns:
-  evaluate whether depending on it reduces correctness maintenance cost more than
-  the dependency adds.
+- **Module-agnostic parity trigger (the real one):** if any contrib module emits
+  JSON-LD **from the rendered view display** — gating on field placement and
+  paragraph visibility, the way this module's parity rule requires — **and**
+  reaches a stable release with security-advisory coverage, re-evaluate adopting
+  it. As of 2026-06-13 none does: schemadotorg ships the WebPage-spine and a
+  paragraph pipeline but emits from field values (not the render path) and is
+  alpha/no-SA; json_ld_schema is a bare framework with no parity logic. The bar is
+  render-from-display **and** stable **and** SA-covered.
+- If `json_ld_schema` specifically lands an active ecosystem of schema-correctness
+  plugins covering the WebPage-spine, paragraph composition, or parity-gating
+  patterns, the original narrower trigger applies as well.
 - If a third normalizer type (beyond node and paragraph) appears, or if a
   non-recipe site profile wants to adopt this module: re-evaluate whether a
   general-purpose JSON-LD API reduces integration cost.

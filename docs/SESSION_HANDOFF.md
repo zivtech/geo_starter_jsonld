@@ -1,8 +1,10 @@
 # Session Handoff — hoursAvailable via office_hours (2026-06-02)
 
-Internal working note. Status: **feature COMPLETE + fully validated, UNCOMMITTED in
-both repos, awaiting release approval.** Plan + rationale:
-`docs/plans/2026-06-02-hoursavailable-via-office-hours.md`.
+Internal working note. Status: **SUPERSEDED (2026-06-13).** This described the
+hoursAvailable feature while it was uncommitted; it shipped in `1.0.0-alpha3` and
+the module is now at `1.1.0` (see `CHANGELOG.md`). Retained for historical context
+only — do **not** treat its "uncommitted / awaiting approval" status as current.
+Plan + rationale: `docs/plans/2026-06-02-hoursavailable-via-office-hours.md`.
 
 ## What was built
 
